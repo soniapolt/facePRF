@@ -1,4 +1,5 @@
-% loads & plots distributions of XY changes/anything else per each subject
+% loads & plots scatter plot of one par vs the other (e.g. gain vs r2)
+% within condition rather than across conditions
 
 clear all; close all;
 
@@ -8,7 +9,9 @@ expt = 'fixPRF';
 noCenters = 0;
 
 saveFig = 1;
-convertDVA = 1; % convert X and Y measurements into DVA
+
+compPars = {'gain' 'r2'}; %; 1:'Y'    2:'X'    3:'sd'    4:'gain'    5:'exp'
+trimGains = 5;
 
 minR2 = 20;          % cutoff for vox selection
 ROIs= standardROIs;%{'IOG_faces' 'pFus_faces' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4'
@@ -19,19 +22,11 @@ whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
 hems = {'rh' 'lh'};
 fitSuffix = '';%'_orig';%
 
-switch expt
-    case 'fixPRF'
-        baseCond = [2]; compConds = [1];
-    case 'compPRF'
-        baseCond = [3]; compConds = [1 2];
-end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % what to plot?                        %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fontSize = 11; titleSize = 14;
-nBins = 20; % histogram bins
 
 % now we load in the data from both hemispheres, and threshold across
 load(pRFfile(dirOf(pwd),expt,minR2,whichStim,whichModel,hems,fitSuffix,task));
@@ -44,8 +39,7 @@ if length(subjNum) == 1 roi = subj(subjNum).roi; end
 % figure 1: distribution of parameters for this ROI
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for p = 1:length(roi(1).fits(1).parNames)
-    for c = 1:length(compConds)
+    for c = 1:length(roi(1).fits)
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if saveFig && onLaptop figSize = [0 0 1 1]; else figSize = [.2 .1 .8 .8]; end
@@ -54,54 +48,46 @@ for p = 1:length(roi(1).fits(1).parNames)
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         for r = 1:length(ROIs)
-        titleText = [whichModel ' ' roi(1).fits(1).parNames{p} ', Subj: '];
+        titleText = [roi(1).fits(c).cond ' ' whichModel ' ' compPars{1} 'vs. ' compPars{2} ', Subj: '];
         titleText = [titleText strTogether(subjs) ' (voxels R^2 > ' num2str(minR2) '), ' whichStim ' stim, ' whichModel ' model'];
         
         
         subplot(numPlots(1),numPlots(2),r)
             % get param values for this condition
-            pars = vertcat(roi(ROInum(r)).fits(compConds(c)).vox.params);
-            cPars = pars(:,p)';
             
-            % get param values for base condition
-            pars = vertcat(roi(ROInum(r)).fits(baseCond).vox.params);
-            bPars = pars(:,p)';
-            if convertDVA && ~containsTxt(roi(1).fits(1).parNames{p},'exp') && ~containsTxt(roi(1).fits(1).parNames{p},'gain')
-        % rescale some parameters so that they are in DVA units and
-        % centered around zero (center of screen)
-        if ~containsTxt(roi(1).fits(1).parNames{p},'sd') % don't re-center the SD
-            cPars = cPars-roi(1).fits(1).res/2; bPars = bPars-roi(1).fits(1).res/2;
-        end
-        cPars = cPars./roi(1).fits(1).ppd; bPars = bPars./roi(1).fits(1).ppd;
-        end
-            
-            scatterCent(bPars,cPars,condColors(compConds(c)),...
-                roi(ROInum(r)).fits(baseCond).cond,roi(ROInum(r)).fits(compConds(c)).cond,[ROIs{r} ' (' num2str(length(roi(r).fits(1).vox)) ' vox)'],fontSize);
-            
-            if containsTxt(roi(1).fits(1).parNames{p},'gain') % cut off gain plots
-            xlim([0 10]); ylim([0 10]); end
+            for p = 1:2
+            parNum = cellNum(compPars{p},roi(1).fits(1).parNames);
+            if ~isempty(parNum)
+            pars = vertcat(roi(ROInum(r)).fits(c).vox.params);
+            plPars{p} = pars(:,parNum)'; 
+            else 
+            eval(['plPars{p} = [roi(ROInum(r)).fits(c).vox.' compPars{p} '];']);  end  
         
-            %title(ROIs{r},'fontSize',titleSize,'interpreter','none','FontWeight','bold');
-            %xlabel(roi(1).fits(1).parNames{p},'fontSize',titleSize);
-            %xlabel(ROIs{r},'fontSize',titleSize,'interpreter','none','FontWeight','bold');
+            if containsTxt(compPars{p},'gain') && trimGains>0 % for the time being, only look at reasonable-ish gains
+              z = plPars{p};
+              z(find(z>trimGains))=NaN;
+              plPars{p}=z;
+            end
+            end
             
-        end
+            scatterCent(plPars{1},plPars{2},condColors(4),...
+                compPars{1},compPars{2},[ROIs{r} ' (' num2str(length(roi(r).fits(1).vox)) ' vox)'],fontSize,0,1);
+            
         superTitle(titleText,titleSize,.025);
-        
+        end
         if saveFig == 1
             if length(subjs) == 1 
                 txt = ['subj' subjs{1}]; 
             else txt = ['groupN' num2str(length(subjs))]; end
             if exist('task','var')
-                txt = [roi(1).fits(1).parNames{p} '_' task 'Task_' txt ];
-            else txt = [roi(1).fits(1).parNames{p} '_' txt ];end
+                txt = [compPars{1} 'V' compPars{2} '_' task 'Task_' txt ];
+            else txt = [compPars{1} 'V' compPars{2} '_' txt ];end
             if length(hems) == 1
                 txt = [txt '_' hems{1}]; end
-            if ~containsTxt(whichStim,'photo')
-            txt = [whichStim '_' txt];  end
-            txt = ['scatter_' whichModel '_' txt];
+            
+            txt = ['scatter_' roi(1).fits(c).cond '_' whichModel '_' txt];
             niceSave([dirOf(pwd) 'figures/' expt '/params/'],txt); % just save pngs, since these can be generated pretty quickly
         end
+        
     end
-end
 if onLaptop playSound; end

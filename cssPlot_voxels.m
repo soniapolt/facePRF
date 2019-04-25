@@ -3,18 +3,18 @@ clear all; close all;
 
 subj = 'SP';
 task = '';
-expt = 'compPRF';
+expt = 'fixPRF';
 
 [session, numRuns] = vpnlSessions(expt,subj); % OPTIONAL: SESSNUM, TASK
 
 
 whichStim = 'photo';
-whichModel = 'kayCSS';%'cssShift';%
+whichModel = 'cssExpN';%'cssShift';%
 
 ROI = 'lh_pFus_faces';%'rh_mFus_faces';%
 sortR2 = 1; % sort voxels by descending R2 or (0) grab random ones
 minR2 = 10;
-numPlot = [1:50];
+numPlot = [1:10];
 
 [~, fitsName] = fitsDirs(dirOf(pwd),expt,session,whichStim,vpnlROI(ROI,subj),whichModel);
 load(fitsName);

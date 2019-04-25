@@ -4,15 +4,16 @@ clear all; close all;
 
 subjs = {'MG' 'JG' 'TH' 'EM' 'DF' 'SP'};%
 task = '';
-expt = 'compPRF';
+expt = 'fixPRF';
 noCenters = 0;
 
 saveFig = 1;
+convertDVA = 1;
 
 minR2 = 20;          % cutoff for vox selection
-ROIs= standardROIs;%{'IOG_faces' 'pFus_faces' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4' 
+ROIs= {'V1' 'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4' 
 
-whichStim = 'internal';%'photo';%
+whichStim = 'photo';%'internal';%
 whichModel = 'kayCSS';%'cssExpN';%'cssShift';%
 whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
 hems = {'rh' 'lh'};
@@ -54,15 +55,28 @@ titleText = [titleText strTogether(subjs) ' (voxels R^2 > ' num2str(minR2) '), '
     for c = 1:length(roi(1).fits)
         pars = vertcat(roi(ROInum(r)).fits(c).vox.params);   
         % get param values for this condition
+        
         cPars{c} = pars(:,p)';
+        if convertDVA && ~containsTxt(roi(1).fits(1).parNames{p},'exp') && ~containsTxt(roi(1).fits(1).parNames{p},'gain')
+        % rescale some parameters so that they are in DVA units and
+        % centered around zero (center of screen)
+        if ~containsTxt(roi(1).fits(1).parNames{p},'sd') % don't re-center the SD
+            cPars{c} = cPars{c}-roi(1).fits(1).res/2;
+        end
+        cPars{c} = cPars{c}./roi(1).fits(1).ppd;
+        end
+    end   
+    if containsTxt(roi(1).fits(1).parNames{p},'gain')
+        niceBoxplot([cPars{1};cPars{2}]',{roi(ROInum(r)).fits.cond},1,[condColors(4);condColors(2)],[0 10]);
+        %boxplot([cPars{1};cPars{2}]','labels',{roi(ROInum(r)).fits.cond},'plotstyle','traditional','outliersize',.5,'jitter',.1);
+        %ylim([0 10]);
+    else
+    plotDistr(cPars,1,{roi(ROInum(r)).fits.cond},nBins,whichM,0);
     end
-    
-    plotDistr(cPars,1,{roi(ROInum(r)).fits.cond},nBins,whichM,1);
-    
     %title(ROIs{r},'fontSize',titleSize,'interpreter','none','FontWeight','bold'); 
     %xlabel(roi(1).fits(1).parNames{p},'fontSize',titleSize);
     xlabel(ROIs{r},'fontSize',titleSize,'interpreter','none','FontWeight','bold');
-    
+
     end
     superTitle(titleText,titleSize,.025);
 
@@ -78,7 +92,7 @@ if saveFig == 1
     end
     if length(hems) == 1
         txt = [txt '_' hems{1}]; end
-        txt = [whichModel '_' txt];
+        txt = ['distr_' whichModel '_' whichStim '_' txt];
     niceSave([dirOf(pwd) 'figures/' expt '/params/'],txt); % just save pngs, since these can be generated pretty quickly
 end
 end

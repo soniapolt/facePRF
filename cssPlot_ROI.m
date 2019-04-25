@@ -10,7 +10,7 @@ subjs = {'SP' 'DF' 'EM' 'TH' 'MG' 'JG'};%;
 expt = 'fixPRF';
 
 minR2 = 20;          % cutoff for vox selection
-ROIs= standardROIs; %{'hV4'};
+ROIs= {'hV4'};%standardROIs; %
 % manual set of baseCond + compConds
 % [baseCond, compCond], more flexibly defined
 if containsTxt(expt,'compPRF')
@@ -18,7 +18,7 @@ base = 1; comps = [1 2; 1 3; 2 3];
 elseif containsTxt(expt,'fixPRF')
 base =2; comps = [2 1]; end
 
-saveFig = 1;
+saveFig = 0;
 
 whichStim = 'photo';%'internal';%
 whichModel = 'kayCSS';%''cssExpN';%cssShift';%
@@ -31,8 +31,8 @@ hems = {'lh' 'rh'};
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plotBasics = 1;
 plotBaselines = 0;
-plotXY = 1;
-plotSize = 1;
+plotXY = 0;
+plotSize = 0;
 
 fontSize = 12; titleSize = 14;
 
@@ -75,7 +75,7 @@ else bFits =roi(ROInum(r)).fits; end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % 1) coverage, baseCond
         subplot(numPlots(1),numPlots(2),pl)
-        plotCoverage(bFits(base).vox,condColors(base),bFits(base).cond,roi(1).fits(1).ppd,roi(1).fits(1).res);
+        plotCoverage(bFits(base).vox,condColors(base),bFits(base).cond,roi(1).fits(1).ppd,roi(1).fits(1).res,1);
         pl = pl+1;
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -116,7 +116,7 @@ else bFits =roi(ROInum(r)).fits; end
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % col 1) coverage
             subplot(numPlots(1),numPlots(2),pl)
-            plotCoverage(bFits(c).vox,condColors(c),bFits(c).cond,roi(1).fits(1).ppd,roi(1).fits(1).res);
+            plotCoverage(bFits(c).vox,condColors(c),bFits(c).cond,roi(1).fits(1).ppd,roi(1).fits(1).res,1);
             pl = pl+1;
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -340,3 +340,5 @@ else bFits =roi(ROInum(r)).fits; end
     end
     if saveFig close all; end
 end % ROIs
+
+if onLaptop playSound; end

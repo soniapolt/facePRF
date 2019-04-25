@@ -2,7 +2,7 @@
 
 clear all; close all;
 
-subjs = {'TH' 'DF' 'EM' 'MG' 'JG'};% 'SP'
+subjs = {'TH' 'DF' 'EM' 'MG' 'JG' 'SP'};%
 %task = 'fix';
 expt = 'fixPRF';
 
@@ -75,10 +75,10 @@ if saveFig == 1
     end
     if length(hems) == 1
         txt = [txt '_' hems{1}]; end
-    if ~containsTxt(whichStim,'photo')
-        txt = [whichStim '_' txt]; end
+    %if ~containsTxt(whichStim,'photo')
+        txt = [whichStim '_' txt]; %end
     
-        txt = [whichModel '_' txt];
+        txt = ['distr_' whichModel '_' txt];
     niceSave([dirOf(pwd) 'figures/' expt '/params/'],txt); % just save pngs, since these can be generated pretty quickly
 end
 end
