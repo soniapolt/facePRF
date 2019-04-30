@@ -9,7 +9,7 @@ clear all; close all;
 subjs = {'SP' 'DF' 'EM' 'TH' 'MG' 'JG'};%;
 expt = 'fixPRF';
 
-minR2 = 20;          % cutoff for vox selection
+minR2 = 50;          % cutoff for vox selection
 ROIs= standardROIs; %
 sampleVox = 0; % how many randomly selected voxels are we plotting?
 
@@ -52,7 +52,7 @@ for r = 1:length(ROIs)
     % 1) coverage, 
     for c = fliplr([1:length(bFits)])
     subplot(numPlots(1),numPlots(2),pl)
-    plotCoverage(bFits(c).vox,condColors(c),'',roi(1).fits(1).ppd,roi(1).fits(1).res,sampleVox,1);
+    plotCoverage(bFits(c).vox,condColors(3),'',roi(1).fits(1).ppd,roi(1).fits(1).res,sampleVox,1);
     t = title(roi(1).fits(c).cond);
     set(t,'visible','on');
     pl = pl+1;
@@ -60,7 +60,10 @@ for r = 1:length(ROIs)
     
     superTitle(titleText,titleSize,.05);
     if saveFig
-        txt = [ROIs{r} '_' whichModel  '_' whichStim '_sampleVox' num2str(sampleVox)];
+        
+        txt = [hemText(hems) ROIs{r} '_' whichModel  '_' whichStim '_sampleVox' num2str(sampleVox)];
+        if ~isequal(minR2,20)
+            txt = [txt '_r2-' num2str(minR2)];end
         niceSave([dirOf(pwd) 'figures/' expt '/simpleCoverage/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
     end
     

@@ -6,7 +6,7 @@
 
 clear all; close all;
 
-subjs = {'SP' 'DF' 'EM' 'TH' 'MG' 'JG'};%;
+subjs = {'SP'};% 'DF' 'EM' 'TH' 'MG' 'JG'};%;
 expt = 'fixPRF';
 
 minR2 = 20;          % cutoff for vox selection
