@@ -4,15 +4,15 @@ clear all; close all;
 
 subjs = {'TH' 'DF' 'EM' 'JG' 'MG' 'SP'};
 expt = 'fixPRF';
-tests = {'Y' 'size' 'r2'}; % can be parname (Y,X,sd,gain,exp,shift) or pRF.read value (r2,size,eccen,gain)
+tests = {'Y' 'X' 'eccen' 'gain' 'size' 'r2'}; % can be parname (Y,X,sd,gain,exp,shift) or pRF.read value (r2,size,eccen,gain)
 whichM = 'median'; % mean or median
 
 
-minR2 = 20;          % cutoff for vox selection
+minR2 = 50;          % cutoff for vox selection
 ROIs= {'V1' 'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};
 fitSuffix = '';
 
-whichStim = 'internal';
+whichStim = 'photo';
 whichModel = 'kayCSS';
 hems = {'lh' 'rh'};
 
@@ -25,10 +25,10 @@ ROInum = cellNum(ROIs,info.ROIs);
 subjNum = cellNum(subjs,info.subjs);
 
 comps = nchoosek(1:length(roi(1).fits),2);
-
+fprintf('\n%s\n\n**************\n',whichM);
 for t = 1:length(tests)
     test = tests{t};
-    fprintf('\n\n');
+    fprintf('-----\n%s:\n-----\n',test);
     for cc = 1:size(comps,1)
         baseCond = comps(cc,1);
         c = comps(cc,2);

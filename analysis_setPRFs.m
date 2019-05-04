@@ -8,12 +8,12 @@ info.task = '';
 info.expt = 'fixPRF';
 info.setNotes = '';
 
-info.minR2 = 20;          % cutoff for vox selection
+info.minR2 = 50;          % cutoff for vox selection
 info.ROIs= standardROIs;
 
 info.whichStim = 'photo';
-info.whichModel ='cssExpN';%  'kayCSS';%%'cssShift';%
-info.hems = {'rh' 'lh'};
+info.whichModel ='kayCSS';%'cssExpN';%  %'cssShift';%
+info.hems = {'lh'};
 info.fitSuffix = ''; %'_orig';%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
