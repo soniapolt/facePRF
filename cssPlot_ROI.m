@@ -30,9 +30,9 @@ hems = {'lh' 'rh'};
 % what to plot?                        %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plotBasics = 1;
-plotBaselines = 0;
-plotXY = 0;
-plotSize = 0;
+plotBaselines = 1;
+plotXY = 1;
+plotSize = 1;
 
 fontSize = 12; titleSize = 14;
 

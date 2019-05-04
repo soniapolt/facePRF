@@ -10,7 +10,7 @@ noCenters = 0;
 
 saveFig = 1;
 
-compPars = {'size' 'Y'}; %; 1:'Y'    2:'X'    3:'sd'    4:'gain'    5:'exp'
+compPars = {'r2' 'eccen'}; %; 1:'Y'    2:'X'    3:'sd'    4:'gain'    5:'exp'
 trimGains = 5;
 plotConds = [1 2]; % allows us to just vis one condition at a time
 
