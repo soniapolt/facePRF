@@ -7,16 +7,16 @@ subjs = {'TH' 'DF' 'EM' 'JG' 'MG' 'SP'};%'SP'
 task = '';
 expt = 'fixPRF';
 
-minR2 = 20;          % cutoff for vox selection
+minR2 = 50;          % cutoff for vox selection
 ROIs= standardROIs;% 'V3' 'hV4' 'IOG_faces' 'pFus_faces','mFus_faces'
-whichCond = 1; 
+whichCond =2; 
 saveFig = 0;
 
 whichStim = 'photo';
 whichModel = 'kayCSS';%'cssExpN';%
 fitSuffix = '';
 
-hems = {'lh','rh'};
+hems = {'rh' 'lh'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % what to plot?                        %
@@ -38,7 +38,7 @@ titleText = [expt ' (' hemText(hems) ') '];
 titleText = [titleText strTogether(subjs) ' (voxels R^2 > ' num2str(minR2) '), ' whichStim ' stim, ' whichModel ' model'];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-niceFig([.1 .1 .4 .6],fontSize);
+niceFig([.1 .1 .8 .8],fontSize,1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -51,7 +51,7 @@ for r = 1:length(ROIs)
     s(r) = scatter([roi(ROInum(r)).fits(whichCond).vox.eccen],[roi(ROInum(r)).fits(whichCond).vox.size],30,condColors(r,1)); hold on;
     %if r~=length(ROIs)
     [h1 h2] = scatterline([roi(ROInum(r)).fits(whichCond).vox.eccen],[roi(ROInum(r)).fits(whichCond).vox.size],[0:.5:7],NaN,100,condColors(r,1),1,1);
-    alpha(.3);
+    alpha(.2);
     %end
     %[linePar{r} lineR2{r}] = fitl1line([roi(r).fits(whichCond).vox.eccen],[roi(r).fits(whichCond).vox.size]);
     %%% fitline2derror option

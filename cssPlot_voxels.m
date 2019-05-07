@@ -4,17 +4,17 @@ clear all; close all;
 subj = 'SP';
 task = '';
 expt = 'fixPRF';
-
+noCenters = 0;
 [session, numRuns] = vpnlSessions(expt,subj); % OPTIONAL: SESSNUM, TASK
 
 
 whichStim = 'photo';
-whichModel = 'cssExpN';%'cssShift';%
+whichModel = 'kayCSS';%'cssExpN';%'cssShift';%
 
-ROI = 'lh_pFus_faces';%'rh_mFus_faces';%
+ROI = 'rh_mFus_faces';%'rh_mFus_faces';%
 sortR2 = 1; % sort voxels by descending R2 or (0) grab random ones
 minR2 = 10;
-numPlot = [1:10];
+numPlot = 1;%[1:10];
 
 [~, fitsName] = fitsDirs(dirOf(pwd),expt,session,whichStim,vpnlROI(ROI,subj),whichModel);
 load(fitsName);
@@ -34,7 +34,7 @@ if sortR2 == 1
 else
     plotVox = Shuffle(1:length(fits(1).vox));
 end
-plotVox = 87;
+plotVox = 62;
 
 %%%%% trim fits to plot
 % reasonable parameter estimates, at least one positive response per condition
@@ -55,7 +55,7 @@ if length(numPlot)>length(plotVox)
 for p = 1:length(numPlot)
     if mod(p,4)==1
         column = 1;
-        figure;set(gcf,'color',[1 1 1],'Units', 'Normalized', 'OuterPosition', [.1 .2 .8 1]); set(gca,'FontSize',fontSize);
+        niceFig([.1 .2 .8 1],fontSize,1);
     end
     
     %%%%%%%%% plot betas and modelfit
@@ -65,6 +65,7 @@ for p = 1:length(numPlot)
     for c = 1:length(fits)
         hbar(c) = niceBars([fits(c).condNums],[fits(c).vox(v).betas],[fits(c).vox(v).sems],condColors(c));
         plot(fits(c).condNums,fits(c).vox(v).modelfit,'b-','LineWidth',2);
+        %errorbar_fix(hbar(c),condColors(c));
     end
     
     legend([hbar(1:length(fits))],{fits.cond},'location','SouthEast','FontSize',10,'box','off');
