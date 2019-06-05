@@ -6,20 +6,20 @@
 
 clear all; close all;
 
-subjs = {'SP' 'DF' 'EM' 'TH' 'MG' 'JG'};%;
+subjs = {'SP' 'DF' 'EM' 'TH' 'MG' 'JG'};%;{'DF'};%
 expt = 'fixPRF';
 
-minR2 = 20;          % cutoff for vox selection
+minR2 =20;          % cutoff for vox selection
 ROIs= standardROIs('face'); %
 sampleVox = 0; % how many randomly selected voxels are we plotting?
 
 saveFig = 0;
 
-whichStim = 'photo';%'internal';%
+whichStim = 'eyes';%'internal';%
 whichModel = 'kayCSS';%''cssExpN';%cssShift';%
 fitSuffix = '';
 
-hems = {'lh' 'rh'};
+hems = {'rh' 'lh'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % what to plot?                        %
@@ -45,14 +45,15 @@ for r = 1:length(ROIs)
         ' (' num2str(length(bFits(1).vox)) ' voxels R^2 > ' num2str(minR2) ', sampleVox = ' num2str(sampleVox) '), ' whichStim];
     
     if onLaptop niceFig([.1 .1 .8 .8],fontSize); else
-        niceFig([0 .2 .6 .25*(size(comps,1)+1)],fontSize); end
+        niceFig([0 .2 .6 .25*(3)],fontSize); end
     numPlots = [1 length(bFits)]; pl = 1;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % 1) coverage, 
     for c = fliplr([1:length(bFits)])
+        %niceFig([.1 .1 1 1],16)
     subplot(numPlots(1),numPlots(2),pl)
-    plotCoverage(bFits(c).vox,condColors(3),'',roi(1).fits(1).ppd,roi(1).fits(1).res,sampleVox,1,1,1.6);
+    plotCoverage(bFits(c).vox,condColors(3),'',roi(1).fits(1).ppd,roi(1).fits(1).res,sampleVox,1);
     t = title(roi(1).fits(c).cond);
     set(t,'visible','on');
     pl = pl+1;

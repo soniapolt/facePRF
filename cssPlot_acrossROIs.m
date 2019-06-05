@@ -12,10 +12,10 @@ subjs = {'group'};
 
 % manual set of baseCond + compConds
 % [baseCond, compCond], more flexibly defined
-comps = [1 2; 1 3; 2 3];
-fitSuffix = '_new';
+comps = [2 1];%[1 2; 1 3; 2 3];
+fitSuffix = '';
 
-saveFig = 1;
+saveFig = 0;
 
 whichStim = 'photo';
 whichModel = 'kayCSS';%'cssExpN';%'cssShift';%
