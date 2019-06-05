@@ -7,13 +7,13 @@ task = '';
 expt = 'fixPRF';
 noCenters = 0;
 
-saveFig = 1;
+saveFig = 0;
 convertDVA = 1; % convert X and Y measurements into DVA
 
 minR2 = 20;          % cutoff for vox selection
-ROIs= standardROIs;%{'IOG_faces' 'pFus_faces' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4'
+ROIs= {'hV4' 'mFus_faces'};%standardROIs;%'V1' 'V2' 'V3' 'hV4'
 
-whichStim = 'photo';%'internal';%
+whichStim = 'internal';%'photo';%'external';%
 whichModel = 'kayCSS';%'cssExpN';%'cssShift';%
 whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
 hems = {'rh' 'lh'};
@@ -49,7 +49,7 @@ for p = 1:length(roi(1).fits(1).parNames)
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if saveFig && onLaptop figSize = [0 0 1 1]; else figSize = [.2 .1 .8 .8]; end
-        niceFig(figSize,fontSize);
+        niceFig(figSize,fontSize,1);
         numPlots = [2 ceil(length(ROIs)/2)];
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -70,7 +70,7 @@ for p = 1:length(roi(1).fits(1).parNames)
         % rescale some parameters so that they are in DVA units and
         % centered around zero (center of screen)
         if ~containsTxt(roi(1).fits(1).parNames{p},'sd') % don't re-center the SD
-            cPars = cPars-roi(1).fits(1).res/2; bPars = bPars-roi(1).fits(1).res/2;
+            cPars = roi(1).fits(1).res-cPars-roi(1).fits(1).res/2; bPars = roi(1).fits(1).res-bPars-roi(1).fits(1).res/2;
         end
         cPars = cPars./roi(1).fits(1).ppd; bPars = bPars./roi(1).fits(1).ppd;
         end

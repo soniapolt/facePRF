@@ -6,12 +6,12 @@ subjs = {'TH' 'DF' 'EM' 'MG' 'JG' 'SP'};%
 %task = 'fix';
 expt = 'fixPRF';
 
-saveFig = 1;
+saveFig = 0;
 
 minR2 = 20;          % cutoff for vox selection
-ROIs= standardROIs;%{'IOG_faces' 'pFus_faces' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4' 
+ROIs= {'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4' 
 
-whichStim = 'photo';%'internal';%
+whichStim = 'internal';%'eyes';%'photo';%
 whichModel = 'kayCSS';%'cssExpN';%'cssShift';%
 whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
 hems = {'rh' 'lh'};

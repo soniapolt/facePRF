@@ -7,13 +7,14 @@ task = '';
 expt = 'fixPRF';
 noCenters = 0;
 
-saveFig = 1;
+saveFig = 0;
 convertDVA = 1;
+normVoxCount = 1;
 
 minR2 = 20;          % cutoff for vox selection
-ROIs= {'V1' 'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4' 
+ROIs= {'mFus_faces'};%'V1' 'V2' 'V3' 'hV4' hV4' 'IOG_faces' 'pFus_faces' 
 
-whichStim = 'photo';%'internal';%
+whichStim = 'photo';%'eyes';%'internal';%
 whichModel = 'kayCSS';%'cssExpN';%'cssShift';%
 whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
 hems = {'rh' 'lh'};
@@ -44,7 +45,7 @@ titleText = [titleText strTogether(subjs) ' (voxels R^2 > ' num2str(minR2) '), '
  
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if saveFig && onLaptop figSize = [0 0 1 1]; else figSize = [.2 .1 8 .8]; end
-    niceFig(figSize,fontSize);
+    niceFig(figSize,fontSize,1);
     numPlots = [2 ceil(length(ROIs)/2)];
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -61,7 +62,7 @@ titleText = [titleText strTogether(subjs) ' (voxels R^2 > ' num2str(minR2) '), '
         % rescale some parameters so that they are in DVA units and
         % centered around zero (center of screen)
         if ~containsTxt(roi(1).fits(1).parNames{p},'sd') % don't re-center the SD
-            cPars{c} = cPars{c}-roi(1).fits(1).res/2;
+            cPars{c} = roi(1).fits(1).res-cPars{c}-roi(1).fits(1).res/2;
         end
         cPars{c} = cPars{c}./roi(1).fits(1).ppd;
         end
@@ -71,6 +72,7 @@ titleText = [titleText strTogether(subjs) ' (voxels R^2 > ' num2str(minR2) '), '
         %boxplot([cPars{1};cPars{2}]','labels',{roi(ROInum(r)).fits.cond},'plotstyle','traditional','outliersize',.5,'jitter',.1);
         %ylim([0 10]);
     else
+        
     plotDistr(cPars,1,{roi(ROInum(r)).fits.cond},nBins,whichM,0);
     end
     %title(ROIs{r},'fontSize',titleSize,'interpreter','none','FontWeight','bold'); 

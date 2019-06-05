@@ -8,14 +8,14 @@ task = '';
 expt = 'fixPRF';
 noCenters = 0;
 
-saveFig = 1;
+saveFig = 0;
 
-compPars = {'r2' 'eccen'}; %; 1:'Y'    2:'X'    3:'sd'    4:'gain'    5:'exp'
+compPars = {'r2' 'size'}; %; 1:'Y'    2:'X'    3:'sd'    4:'gain'    5:'exp'
 trimGains = 5;
 plotConds = [1 2]; % allows us to just vis one condition at a time
 
-minR2 = 20;          % cutoff for vox selection
-ROIs= standardROIs;%{'IOG_faces' 'pFus_faces' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4'
+minR2 = 50;          % cutoff for vox selection
+ROIs= {'hV4' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4'
 
 whichStim = 'photo';%'internal';%
 whichModel = 'kayCSS';%'cssExpN';%'cssShift';%
@@ -75,6 +75,7 @@ for r = 1:length(ROIs)
         pl(c) = scatterCent(plPars{1},plPars{2},condColors(c),...
             compPars{1},compPars{2},[ROIs{r} ' (' num2str(length(roi(r).fits(1).vox)) ' vox)'],fontSize,0,1);
         hold on; l =lsline; l=fliplr(l);
+        if strcmp(compPars{1},'r2') xlim([minR2 100]);end
         
     end
     g = legend(pl(plotConds),{roi(1).fits(:).cond});
