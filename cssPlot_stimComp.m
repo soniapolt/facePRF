@@ -9,7 +9,7 @@
 
 clear all; close all;
 
-subjs = {'DF' 'EM' 'TH' 'JG' 'MG'};%;%'JG';
+subjs = {'DF' 'EM' 'TH' 'JG' 'MG' 'JG'};%;%;
 task = '';
 expt = 'fixPRF';
 saveFig = 1;
@@ -17,9 +17,9 @@ saveFig = 1;
 whichModel = 'kayCSS';
 fitSuffix = '';%'_orig';%
 whichCond = 1;
-allStims = {'binary','photo','edge','internal'};
-comp = [2,4];
-fitsSuffix = ''; '_orig';
+allStims = {'binary','photo','eyes','internal'};
+comp = [2,3];
+fitsSuffix = ''; %'_orig';
 
 minR2 = 20;
 ROIs=standardROIs('face');
