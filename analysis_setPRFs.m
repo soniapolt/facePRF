@@ -11,9 +11,9 @@ info.setNotes = '';
 info.minR2 = 50;          % cutoff for vox selection
 info.ROIs= standardROIs;
 
-info.whichStim = 'photo';
+info.whichStim = 'internal';
 info.whichModel ='kayCSS';%'cssExpN';%  %'cssShift';%
-info.hems = {'lh'};
+info.hems = {'lh' 'rh'};
 info.fitSuffix = ''; %'_orig';%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

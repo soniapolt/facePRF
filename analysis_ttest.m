@@ -4,15 +4,15 @@ clear all; close all;
 
 subjs = {'TH' 'DF' 'EM' 'JG' 'MG' 'SP'};
 expt = 'fixPRF';
-tests = {'Y' 'X' 'eccen' 'gain' 'size' 'r2'}; % can be parname (Y,X,sd,gain,exp,shift) or pRF.read value (r2,size,eccen,gain)
+tests = {'Y' 'X' 'gain' 'size'}; % can be parname (Y,X,sd,gain,exp,shift) or pRF.read value (r2,size,eccen,gain)
 whichM = 'median'; % mean or median
 
 
-minR2 = 50;          % cutoff for vox selection
-ROIs= {'V1' 'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};
+minR2 = 20;          % cutoff for vox selection
+ROIs= {'V1'};%{'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};%
 fitSuffix = '';
 
-whichStim = 'photo';
+whichStim = 'photo';%'eyes';%
 whichModel = 'kayCSS';
 hems = {'lh' 'rh'};
 
@@ -63,10 +63,13 @@ for t = 1:length(tests)
             
             comp(c).groupData{r} = sData;
             [H,P,CI,STATS] = ttest(sData(:,1),sData(:,2));
+            comp(c).diff = mean(sData(:,2))-mean(sData(:,1));
+            if strcmp(test,'X') || strcmp(test,'Y')
+                comp(c).diff = comp(c).diff /roi(1).fits(1).ppd; end
             comp(c).p(r) = P;
             comp(c).stats{r} = STATS;
             if H sig = '***'; else sig = ''; end
-            fprintf('%s [%s %s:] %s param %s, %s: t(%d)=%.2f, p=%.3f\n',sig,hemText(hems),ROIs{r},test,comp(c).descr,whichM,STATS.df,STATS.tstat,P);
+            fprintf('%s [%s %s:] %s param %s, %s: t(%d)=%.2f, p=%.3f; diff = %.3f\n',sig,hemText(hems),ROIs{r},test,comp(c).descr,whichM,STATS.df,STATS.tstat,P,comp(c).diff);
         end
     end
 end
