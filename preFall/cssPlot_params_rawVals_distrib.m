@@ -2,23 +2,21 @@
 
 clear all; close all;
 
-subjs = {'TH' 'DF' 'EM' 'MG' 'JG' 'SP'};%
-%task = 'fix';
+subjs = prfSubjs;%{'MG' 'JG' 'TH' 'EM' 'DF' 'SP'};%
 expt = 'fixPRF';
 
-saveFig = 0;
+saveFig =1 ;
+convertDVA = 1;
+normVoxCount = 1;
 
 minR2 = 20;          % cutoff for vox selection
-ROIs= {'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4' 
+ROIs= ['hV4' standardROIs('face+')]
 
-whichStim = 'internal';%'eyes';%'photo';%
-whichModel = 'kayCSS';%'cssExpN';%'cssShift';%
+whichStim = 'photo';%'eyes';%'internal';%
+whichModel = 'kayCSS';%'flipCSSn';%'cssExpN';%'cssShift';%
 whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
 hems = {'rh' 'lh'};
 fitSuffix = '';%'_orig';%
-
-distLong = {'Eccen (dva)' 'Size (2*SD/sqrt(N)) (dva)' 'R2'};
-distShort = {'eccen' 'size' 'r2'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % what to plot?                        %
@@ -32,53 +30,63 @@ load(pRFfile(dirOf(pwd),expt,minR2,whichStim,whichModel,hems,fitSuffix));
 ROInum = cellNum(ROIs,info.ROIs);
 subjNum = cellNum(subjs,info.subjs);
 
+if length(subjNum) == 1 roi = subj(subjNum).roi; end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % figure 1: distribution of parameters for this ROI
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for p = 1:length(distShort)
+for p = 1:length(roi(1).fits(1).parNames)
     
-titleText = [expt ' ' distLong{p} ', Subj: '];
+titleText = [whichModel ' ' roi(1).fits(1).parNames{p} ', Subj: '];
 titleText = [titleText strTogether(subjs) ' (voxels R^2 > ' num2str(minR2) '), ' whichStim ' stim, ' whichModel ' model'];
  
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if saveFig && onLaptop figSize = [0 0 1 1]; else figSize = [.2 .1 8 .8]; end
-    niceFig(figSize,fontSize);
+    niceFig(figSize,fontSize,1);
     numPlots = [2 ceil(length(ROIs)/2)];
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for r = 1:length(ROIs)
     subplot(numPlots(1),numPlots(2),r)
-    if length(subjNum) == 1 prfs = subj(subjNum).roi(ROInum(r)); else prfs = roi(ROInum(r)); end
+    
+    
     for c = 1:length(roi(1).fits)
-        eval(['cPars{c} = [prfs.fits(c).vox.' distShort{p} '];']);
+        pars = vertcat(roi(ROInum(r)).fits(c).vox.params);   
+        % get param values for this condition
+        
+        cPars{c} = pars(:,p)';
+        if convertDVA && p < 4 % first three pars are always X Y SD (right?)
+        % rescale some parameters so that they are in DVA units and
+        % centered around zero (center of screen)
+        if ~containsTxt(roi(1).fits(1).parNames{p},'sd') % don't re-center the SD
+            cPars{c} = roi(1).fits(1).res-cPars{c}-roi(1).fits(1).res/2;
+        end
+        cPars{c} = cPars{c}./roi(1).fits(1).ppd;
+        end
+    end   
+    if containsTxt(roi(1).fits(1).parNames{p},'gain')
+        niceBoxplot([cPars{1};cPars{2}]',{roi(ROInum(r)).fits.cond},1,[condColors(4);condColors(2)],[0 10]);
+        %boxplot([cPars{1};cPars{2}]','labels',{roi(ROInum(r)).fits.cond},'plotstyle','traditional','outliersize',.5,'jitter',.1);
+        %ylim([0 10]);
+    else
+        
+    plotDistr(cPars,1,{roi(ROInum(r)).fits.cond},nBins,whichM,0);
     end
-    
-    plotDistr(cPars,1,{prfs.fits.cond},nBins,whichM);
-    
-    title(ROIs{r},'fontSize',titleSize,'interpreter','none','FontWeight','bold'); 
-    xlabel(distLong{p},'fontSize',titleSize);
-    
+    %title(ROIs{r},'fontSize',titleSize,'interpreter','none','FontWeight','bold'); 
+    %xlabel(roi(1).fits(1).parNames{p},'fontSize',titleSize);
+    xlabel(ROIs{r},'fontSize',titleSize,'interpreter','none','FontWeight','bold');
+
     end
-    superTitle(titleText,titleSize,.97);
+    superTitle(titleText,titleSize,.025);
 
 if saveFig == 1
     if length(subjs) == 1 txt = ['subj' subjs{1}]; else txt = ['groupN' num2str(length(subjs))]; end
-    switch expt
-            case 'invPRF3'
-                txt = [ distShort{p} '_' task 'Task_' txt ];
-            case 'fixPRF'
-                txt = [distShort{p} '_' txt ];
-            case 'compPRF'
-                txt = [distShort{p} '_' txt ];
-    end
+    txt = [roi(1).fits(1).parNames{p} '_' txt ];
+    
     if length(hems) == 1
         txt = [txt '_' hems{1}]; end
-    %if ~containsTxt(whichStim,'photo')
-        txt = [whichStim '_' txt]; %end
-    
-        txt = ['distr_' whichModel '_' txt];
+        txt = ['distr_' whichModel '_' whichStim '_' txt];
     niceSave([dirOf(pwd) 'figures/' expt '/params/'],txt); % just save pngs, since these can be generated pretty quickly
 end
 end

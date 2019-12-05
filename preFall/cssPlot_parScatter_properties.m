@@ -2,25 +2,27 @@
 
 clear all; close all;
 
-subjs = {'SP' 'TH' 'DF' 'EM' 'MG' 'JG'};% 
+subjs = {'SP' 'TH' 'DF' 'EM' 'MG' 'JG'};% {'george'};%
 %task = 'fix';
-expt = 'fixPRF';
+expt = 'fixPRF';%'nhp';%
 
 saveFig = 1;
 
 minR2 = 20;          % cutoff for vox selection
-ROIs= {'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4'
+ROIs= {'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};%'{'PL' 'ML'};%V1' 'V2' 'V3' 'hV4'
 
-whichStim = 'photo';%'eyes';%
-whichModel = 'kayCSS';%'cssExpN';%'cssShift';%
+whichStim = 'internal';%'eyes';%
+whichModel = 'inflipCSSn';%'cssExpN';%'cssShift';%
 whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
-hems = {'rh' 'lh'};
+hems = {'rh' 'lh'};%{''};%
 fitSuffix = '';%'_orig';%
 
 distLong = {'Eccen (dva)' 'Size (2*SD/sqrt(N)) (dva)' 'R2'};
 distShort = {'eccen' 'size' 'r2'};
 
 switch expt
+    case 'nhp' 
+        baseCond = [2]; compConds = [1]; 
     case 'fixPRF' 
         baseCond = [2]; compConds = [1]; 
     case 'compPRF' 
@@ -50,7 +52,7 @@ for p = 1:length(distShort)
     for c = 1:length(compConds)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if saveFig && onLaptop figSize = [0 0 1 1]; else figSize = [.2 .1 .8 .8]; end
-    niceFig(figSize,fontSize);
+    niceFig(figSize,fontSize); 
     numPlots = [2 ceil(length(ROIs)/2)];
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -61,7 +63,7 @@ for p = 1:length(distShort)
         eval(['cPars = [prfs.fits(compConds(c)).vox.' distShort{p} '];']);
         
         scatterCent(bPars,cPars,condColors(compConds(c)),...
-                prfs.fits(baseCond).cond,prfs.fits(compConds(c)).cond,distLong{p},fontSize);
+                prfs.fits(baseCond).cond,prfs.fits(compConds(c)).cond,distLong{p},fontSize,1,1);
 
         title([ROIs{r} ' (' num2str(length(roi(r).fits(1).vox)) ' vox)'],'fontSize',titleSize,'interpreter','none','FontWeight','bold');
         
@@ -82,6 +84,7 @@ for p = 1:length(distShort)
         txt = [whichModel '_' txt];
         
         niceSave([dirOf(pwd) 'figures/' expt '/params/'],txt); % just save pngs, since these can be generated pretty quickly
+        set(gcf,'renderer','Painters');
     end
     end
 end

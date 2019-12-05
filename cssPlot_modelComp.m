@@ -8,28 +8,34 @@
 % across different visualizations of the fits
 
 clear all; close all;
-addUtils;
 
-subjs = {'JG'};
-sessNums = [1 1 1];
-task = 'fix';
-expt = 'invPRF3';
+subjs = prfSubjs;%{'DF' 'EM' 'TH' 'JG' 'MG' 'SP'};%;%;
+task = '';
+expt = 'fixPRF';
+saveFig = 1;
+convertDVA = 1;
 
-%session = sessions{1};
+whichModels = {'kayCSS' 'kayCSS' 'intempCSSn' 'inflipCSSn'};
+modelStims = {'outline','internal','internal','internal'};
 
-whichStim = 'photo';
-whichCond = 3; % 1 = inverted, 2 = mis-aligned, 3 = upright faces
-allModels = {'negCSS','cssShift','cssNegShift','kayCSS'};
-comp = [4,2];
+fitSuffix = '';%'_orig';%
 
-minR2 = 50;
-ROIs= {'V1','V2' 'V3' 'hV4'};%{'IOG_faces' 'pFus_faces' 'mFus_faces'};%
-plotPars = {'r2' 'x' 'y' 'sd' 'n' 'size' };
-parTitles = {'Estimated R^{2}' 'X Estim. (pix)' 'Y Estim. (pix)' 'SD Estim. (pix)' 'Exponent Estim' 'Size [2xSD/sqrt(N)] (dva)'};
-compModels = {allModels{comp(1)},allModels{comp(2)}};
+fitsSuffix = ''; %'_orig';
+compConds = [2 1];
+
+minR2 = ['r2-50'];
+ROI=standardROIs(7);
+whichM = 'median';
+
+
+plotPars = {'r2' 'Y' 'size' 'gain'};
+parTitles = {'Estimated R^{2}' 'Y Estim.' 'Size [2xSD/sqrt(N)] (dva)' 'Gain Estim'};
+plotType = {'fit' 'fit' 'fit' 'fit'}; % 1 = boxplot, 2 = distr, 3 = scatter, 4 = delta(distribution), 5 = histfit (delta)
+%plotType = {'scatter' 'distr' 'distr' 'box'}; % 1 = boxplot, 2 = distr, 3 = scatter, 4 = delta(distribution)
+plotType = {'delta' 'delta' 'delta' 'delta'}; % 1 = boxplot, 2 = distr, 3 = scatter, 4 = delta(distribution)
+
 hems = {'rh' 'lh'};
-
-sp = [length(ROIs) length(plotPars)];
+fitSuffix = '';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % what to plot?                        %
@@ -38,140 +44,116 @@ sp = [length(ROIs) length(plotPars)];
 
 fontSize = 14; titleSize = 18;
 
-for ss = 1:length(subjs)
-    switch expt
-        case 'invPRF3'
-            [session, ~] = invPRF3_sessions(subjs{ss},sessNums(ss),task);
-        case 'fixPRF'
-            [session, ~] = fixPRF_sessions(subjs{ss},sessNums(ss));
-    end
-    for r = 1:length(ROIs)
-        for m = 1:length(compModels)
-            for h = 1:length(hems)
-                
-                thisROI = vpnlROI([hems{h} '_' ROIs{r}],session(1:2));
-                
-                clear fits;
-                [~,fitFile] = fitsDirs(dirOf(pwd),expt,session,whichStim,thisROI,compModels{m});
-                
-                fprintf('Fits come from: %s\n',fitFile);
-                
-                load(fitFile);
-                
-                if h ==1
-                    model(m).roi(r) = fits(whichCond); % do this only initially
-                else
-                    model(m).roi(r).vox = [model(m).roi(r).vox fits(whichCond).vox]; % do this on every iter
-                    model(m).roi(r).ROIname = {model(m).roi(r).ROIname;fits(whichCond).ROIname}; % do this on every iter
-                end
-                
-            end % hems
-        end % modelFiles
-    end % ROIs
-    
+
+
+
+for p = 1:length(plotPars)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % translate fit params into more meaningful terms for invPRF expt              %
+    if saveFig && onLaptop figSize = [0 0 1 1]; else figSize = [.1 .1 .9 .9]; end
+    f(p) = niceFig(figSize,fontSize);
+    [numPlots(1) numPlots(2)] = subplotDims(length(modelStims),[],2); 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
+
+for t = 1:length(modelStims)
     
-    for r = 1:length(ROIs)
-        for m = 1:length(compModels)
+    % load this model
+    whichModel = whichModels{t};
+    load(pRFfile(dirOf(pwd),expt,minR2,modelStims{t},whichModel,hems,fitSuffix,task));
+    ROInum = cellNum(ROI,info.ROIs);
+    subjNum = cellNum(subjs,info.subjs);
+    if length(subjNum) == 1 roi = subj(subjNum).roi; end
+    % assuming either one subject, or all subjects
+    fits = roi(ROInum).fits;
+    
+    for p = 1:length(plotPars)
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        figure(f(p)); subplot(numPlots(1),numPlots(2),t)
+        % get param values for this condition
+        
+        for cc = 1:length(compConds)
+            c = compConds(cc);
+            parNum = cellNum(plotPars{p},fits(1).parNames);
+            if ~isempty(parNum)
+                pars = vertcat(fits(c).vox.params);
+                plPars{cc} = pars(:,parNum)';
+            else
+                eval(['plPars{cc} = [fits(c).vox.' plotPars{p} '];']);  end
             
-            model(m).roi(r).vox = readPRFs(model(m).roi(r).vox,fits(1).ppd,fits(1).res);
-            % for this particular plotting
-            for v = 1:length(model(m).roi(r).vox)
-                model(m).roi(r).vox(v).x = model(m).roi(r).vox(v).params(2);
-                model(m).roi(r).vox(v).y = model(m).roi(r).vox(v).params(1);
-                model(m).roi(r).vox(v).sd = model(m).roi(r).vox(v).params(3);
-                model(m).roi(r).vox(v).n = model(m).roi(r).vox(v).params(5);
+            if convertDVA && containsTxt(plotPars{p},'Y') || containsTxt(plotPars{p},'X') || containsTxt(plotPars{p},'sd')
+                % rescale some parameters so that they are in DVA units and
+                % centered around zero (center of screen)
+                if ~containsTxt(plotPars{p},'sd') % don't re-center the SD
+                    plPars{cc} = fits(1).res-plPars{cc}-roi(1).fits(1).res/2;
+                end
+                plPars{cc} = plPars{cc}./roi(1).fits(1).ppd;
             end
         end
-    end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% which voxels are we plotting? trim edge values, R2 cutoff                    %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-for r = 1:length(ROIs)
-    plotVox = 1:length(model(1).roi(r).vox);
-    
-    for m = 1:length(compModels)
-        for v = 1:length(model(m).roi(r).vox)
-            if model(m).roi(r).vox(v).r2 < minR2 ...
-                    || trimPRFs(model(m).roi(r).vox(v).params,model(m).roi(r).vox(v).betas,fits(1).ppd,fits(1).res)
-                plotVox(find(plotVox==v)) = []; end
+        
+        switch plotType{p}
+            case 'box'
+                if containsTxt(plotPars{p},'gain')
+                    niceBoxplot([plPars{1};plPars{2}]',{fits(compConds(1)).cond fits(compConds(2)).cond},1,[condColors(4);condColors(2)],[0 10]);
+                    ylim([0 5]);
+                elseif containsTxt(plotPars{p},'r2')
+                    niceBoxplot([plPars{1};plPars{2}]',{fits(compConds(1)).cond fits(compConds(2)).cond},1,[condColors(4);condColors(2)],[minR2 100]);
+                else
+                    niceBoxplot([plPars{1};plPars{2}]',{fits(compConds(1)).cond fits(compConds(2)).cond},1,[condColors(4);condColors(2)]);
+                end
+                if containsTxt(plotPars{p},'size')
+                    ylim([0 5]);
+                end
+            case 'distr'
+                nBins = 20;
+                plotDistr(plPars,1,{fits(compConds(1)).cond fits(compConds(2)).cond},nBins,3,1);
+                if containsTxt(plotPars{p},'size')
+                    xlim([0 10]);
+                else xlim([-5 5]); end
+                
+                [pv, od, effectsize] = permutationTest(plPars{1}, plPars{2}, 1000, ...
+                    'plotresult', 0, 'showprogress', 0);
+                fprintf('%s Permutation Test, %s: p = %.6f, observed difference = %.2f\n ',...
+                    whichModel, plotPars{p},pv,od);
+            case 'delta'
+                 %v = vline(0,'k'); set(v,'LineWidth',2); hold on;
+                 niceHist(plPars{2}-plPars{1},condColors(c),1);
+                 [~,pval,~,stats] = ttest(plPars{2}-plPars{1});
+                 xlabel({[plotPars{p} ' delta' ];sprintf('t(%d) = %0.2f, p = %0.3f',stats.df,stats.tstat,pval)},'FontSize',10);
+                 ylabel('Count');
+            case 'fit'
+                numBins = 100; plotMu = 1;
+                [mu, ci] =  niceHistFit(plPars{2}-plPars{1},condColors(c),numBins,plotMu);
+                xlabel('Delta'); ylabel('Count');
+                xlabel({[plotPars{p} ' delta' ];sprintf('mu = %0.2f (CI = [%0.2f%0.2f])',mu,ci(1),ci(2))},'FontSize',10);
+                
+                
+            case 'scatter'
+                hold on;
+                scatterCent(plPars{1},plPars{2},condColors(c),...
+                    fits(compConds(1)).cond,fits(compConds(2)).cond,[],fontSize,0,1);
+                if strcmp(plotPars{p},'r2') xlim([0 100]); ylim([0 100]); end
+                hold on; xl = get(gca,'xlim');
+                hold on; plot(xl,xl,'k:');
         end
+        title([whichModel ' ' modelStims{t}],'FontSize',titleSize);
+        axis square;
     end
     
-    for m = 1:length(compModels)
-        model(m).roi(r).vox = model(m).roi(r).vox(plotVox);
-    end
 end
 
-niceFig([.1 .1 .9 .9],fontSize);
+for p = 1:length(plotPars)
+figure(f(p));
+superTitle([ROI{1} ' ' upper(plotPars{p})],titleSize,.97);
+superTitle(sprintf('%s Model Comparisons, %s %s, R2 cutoff = %s',ROI{1},whichM,plotPars{p},minR2),titleSize-4,.05);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% plot # 1: estimated params for css & shift models
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for r = 1:length(ROIs)
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % 1) plot of r2 values - post cutoff
-    for p = 1:length(plotPars)
-        subplot(sp(1),sp(2),(r-1)*sp(2)+p)
-        
-        for m = 1:length(compModels)
-            eval(['in{m} = [model(m).roi(r).vox.' plotPars{p} '];']);
-        end
-        
-        scatterCent(in{1},in{2},condColors(r),...
-            compModels{1},{ROIs{r};[num2str(length(model(1).roi(r).vox)) ' Voxels'];' '; compModels{2}},...
-            parTitles{p},fontSize);
-    end
+%subplotresize;
+if saveFig == 1
+    if length(subjs) == 1
+        txt = ['subj' subjs{1}];
+    else txt = ['groupN' num2str(length(subjs))]; end
+    txt = [hemText(hems) '_' ROI{1} '_modelComp_' txt '_' plotPars{p}];
+    if isequal(plotType{1:end}) txt = [txt '_' plotType{1}]; end
+    niceSave([dirOf(pwd) 'figures/' expt '/modelComp/'],txt); % just save pngs, since these can be generated pretty quickly
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% titles
-
-titleText = [];
-if length(hems)>1
-    titleText = ['bilateral ROIs ' titleText];
-else titleText = [hems{1} ' ' titleText]; end
-titleText = [titleText ', Session = ' session];
-
-titleText = [titleText ' (R^{2} thresh: ' num2str(minR2) ')'];
-superTitle(titleText,titleSize,.95);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% plot #2: distribution of shifts for the shiftCSS model
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for m = 1:length(compModels)
-    if ~isempty(strfind(compModels{m},'Shift'))
-        niceFig([.1 .1 1 .7],fontSize);
-        
-        for r = 1:length(ROIs)
-            %subplot(2,length(ROIs),r);
-            
-            shifts = [model(m).roi(r).vox.baseline];
-            
-            subplot(1,length(ROIs),r)
-            
-            thresh = shifts(find(shifts<nanmean(shifts)+3*nanstd(shifts)));
-            thresh = thresh(find(thresh>nanmean(shifts)-3*nanstd(shifts)));
-            
-            hold on; hist(thresh,100); axis square;
-            h = findobj(gca,'Type','patch');
-            set(h,'FaceColor',condColors(r),'FaceAlpha',.5,'EdgeAlpha',0);
-            set(gca,'box','off','color','none');
-            title([num2str(length(thresh)) ' Voxels']);
-            
-            vv = vline(nanmean(thresh),'k:',num2str(nanmean(thresh))); set(vv,'Color',condColors(r),'LineWidth',2);
-            v = vline(0,'k:');
-            xlabel('Outliers Removed');
-            
-            titleText = [model(m).roi(1).whichModel ' (' compModels{m} '), Subj. ' session(1:2)];
-            superTitle(titleText,titleSize);
-        end
-        
-    end % final end of ROIs
 end
-%end % subjects
+if onLaptop playSound; end

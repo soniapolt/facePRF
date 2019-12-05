@@ -7,11 +7,11 @@ expt = 'fixPRF';
 tests = {'Y' 'X' 'eccen' 'size' 'gain' 'r2'}; % can be parname (Y,X,sd,gain,exp,shift) or pRF.read value (r2,size,eccen,gain)
 whichM = 'median'; % mean or median
 
-r2cutoff = 'perc-50';%'r2-20';%  %    %or 'r2-20'    % cutoff for vox selection
-ROIs= standardROIs('face');%{'V1' 'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};
+minR2 = 20;          % cutoff for vox selection
+ROIs= standardROIs('face-');%{'V1' 'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};
 fitSuffix = '';
 
-txtName = ['allFace-' r2cutoff];
+txtName = 'anovan';
 
 whichStim = 'photo';
 whichModel = 'kayCSS';
@@ -25,14 +25,13 @@ factNames = {'hem' 'ROI' 'condition'};
 
 hem = struct;
 for h = 1:length(hems)
-    pF = pRFfile(dirOf(pwd),expt,r2cutoff,whichStim,whichModel,{hems{h}},fitSuffix);
-    load(pF); fprintf('%s\n...',pF);
+    load(pRFfile(dirOf(pwd),expt,minR2,whichStim,whichModel,{hems{h}},fitSuffix));
     hem(h).subj = subj;
 end
 
 ROInum = cellNum(ROIs,info.ROIs);
 subjNum = cellNum(subjs,info.subjs);
-
+fprintf('\n**************\n%s, %s\n**************\n',whichM, strTogether(ROIs));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  ttest the parameters
@@ -41,20 +40,14 @@ parNames = roi(1).fits(1).parNames;
 
 % data formatting for: RMAOV33.m
 % each row = [data fact1# fact2# fact3# subj#];
-checkDir([pwd '/results']);
-    fid = fopen([pwd '/results/ANOVA_' txtName '_' whichModel '_' whichStim],'w+');
-fprintf(fid,'\n**************\n%s, %s\n**************\n',whichM, strTogether(ROIs));
-fprintf(fid,'pRF file: %s\n',pF);
-
-fprintf('\n**************\n%s, %s\n**************\n',whichM, strTogether(ROIs));
-
+checkDir('results/');
+    fid = fopen(['results/ANOVA_' txtName '_' whichModel '_' whichStim],'w+');
 
 for t = 1:length(tests)
     test = tests{t};
     anovaData = [];
     testNum = cellNum(test,parNames);
     
-    rmSubjs = [];
     for h = 1:length(hems)
         for r = 1:length(ROIs)
             sData = [];
@@ -71,23 +64,14 @@ for t = 1:length(tests)
                     end
                     
                     % an = struct('factor',{'hem' 'ROI' 'condition'},'levels',{hems ROIs {'inverted' 'upright'}});
-                    anovaData = [anovaData; sData h r c subjNum(s)];
-                    %else error('Missing data! Can''t run this ANOVA function!'); end
-                    else rmSubjs(end+1) =  subjNum(s); if c == 1 fprintf('Missing data in %s %s-%s!\n', subjs{s}, hems{h}, ROIs{r}); vox
-                        end
-                    end
+                    anovaData = [anovaData; sData h r c s];
+                    else error('Missing data! Can''t run this ANOVA function!'); end
                 end
             end
         end
     end
     
-    % check for missing data and remove those subjects from the comparison
-    for s = unique(rmSubjs);
-        anovaData(find(anovaData(:,end)==s),:) = []; 
-    fprintf('Removed data from subj %s...\n',subjs{subjNum(s)}); end
-
-    % RMAOV33(anovaData,.05,factNames);
-    result = rmAnova3(anovaData,factNames,0);
+    [p,t,stats,terms] = anovan(anovaData(:,1),anovaData(:,2:end-1),'varnames',factNames,'display','off');
     
     % quick ANOVA summary
     
@@ -95,7 +79,7 @@ for t = 1:length(tests)
     fprintf(fid,'\n-----\n%s:\n-----\n',test);
     
     main.s = []; main.ns = []; int.s = []; int.ns=[];
-    for n = 1:length(result)
+    for n = 1:length(t)
         
             text = sprintf('%s, F(%d,%d)=%.2f, p=%.3f.\n',result(n).name,result(n).df(1),result(n).df(2),result(n).F,result(n).p);
         if strcmp(result(n).type,'main')

@@ -2,7 +2,7 @@
 
 clear all; close all;
 
-subjs = {'TH' 'DF' 'EM' 'JG' 'MG'};
+subjs = {'MG' 'JG' 'TH' 'EM' 'DF' 'SP' 'JP' 'MH' 'JW' 'MN' 'JJ'};
 task = '';
 expt = 'fixPRF';
 
@@ -11,7 +11,7 @@ saveFig = 1;
 minR2 = 20;          % cutoff for vox selection
 ROIs= standardROIs('face');%{'IOG_faces' 'pFus_faces' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4' 
 comps = [1 2];%; 1 3; 2 3];
-whichPlot = 2; % 1 = subjs, 2 = group, 3 = both
+whichPlot = 1; % 1 = subjs, 2 = group, 3 = both
 fitSuffix = '';
 
 whichStim = 'photo';

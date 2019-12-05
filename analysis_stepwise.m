@@ -2,15 +2,15 @@
 
 clear all; close all;
 
-subjs = {'TH' 'DF' 'EM' 'JG' 'MG' 'SP'};
+subjs = prfSubjs;%{'TH' 'DF' 'EM' 'JG' 'MG' 'SP'};
 expt = 'fixPRF';
 test = 'size'; % 'X' 'eccen' 'size' 'gain' 'r2' can be parname (Y,X,sd,gain,exp,shift) or pRF.read value (r2,size,eccen,gain)
 
-minR2 = 20;          % cutoff for vox selection
-ROIs= standardROIs;%{'V1' 'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};
+minR2 = ['perc-33'];          % cutoff for vox selection
+ROIs= standardROIs('face');%{'V1' 'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};
 fitSuffix = '';
 
-whichStim = 'photo';
+whichStim = 'outline';
 whichModel = 'kayCSS';
 hems = {'lh' 'rh'};
 

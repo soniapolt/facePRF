@@ -6,20 +6,21 @@
 
 clear all; close all;
 
-subjs = {'SP' 'DF' 'EM' 'TH' 'MG' 'JG'};%;{'DF'};%
-expt = 'fixPRF';
+subjs = prfSubjs;%{'george'};%{'SP' 'DF' 'EM' 'TH' 'MG' 'JG'};%;{'DF'};%
+expt = 'fixPRF';%'nhp';%
+plotRect = 3.2;%4.0719;    % plotCoverage has support for plotCirc; this adds monkey imsize to our data
 
 minR2 =20;          % cutoff for vox selection
-ROIs= standardROIs('face'); %
+ROIs= standardROIs('face+'); %{'PL' 'ML'};%
 sampleVox = 0; % how many randomly selected voxels are we plotting?
 
-saveFig = 0;
+saveFig = 1;
 
-whichStim = 'eyes';%'internal';%
+whichStim = 'photo';%'binary';%'eyes';%'internal';%
 whichModel = 'kayCSS';%''cssExpN';%cssShift';%
 fitSuffix = '';
 
-hems = {'rh' 'lh'};
+hems = {'rh' 'lh'};{''};%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % what to plot?                        %
@@ -39,8 +40,6 @@ for r = 1:length(ROIs)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %  create supertitle
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if exist('task','var');
-        titleText = [task ' task, ']; else titleText = [];end
     titleText = [whichModel ' ' titleText hemText(hems) ' ' ROIs{r} ', Subjs: ' strTogether(subjs) ...
         ' (' num2str(length(bFits(1).vox)) ' voxels R^2 > ' num2str(minR2) ', sampleVox = ' num2str(sampleVox) '), ' whichStim];
     
@@ -53,7 +52,11 @@ for r = 1:length(ROIs)
     for c = fliplr([1:length(bFits)])
         %niceFig([.1 .1 1 1],16)
     subplot(numPlots(1),numPlots(2),pl)
-    plotCoverage(bFits(c).vox,condColors(3),'',roi(1).fits(1).ppd,roi(1).fits(1).res,sampleVox,1);
+    plotCoverage(bFits(c).vox,condColors(3),'',roi(1).fits(1).ppd,roi(1).fits(1).res,1,sampleVox,0,plotRect/2);
+    
+%     if strcmp(expt,'nhp') && plotRect>0
+%     hold on; rectangle('Position',[-plotRect/2,-plotRect/2,plotRect,plotRect]); end
+
     t = title(roi(1).fits(c).cond);
     set(t,'visible','on');
     pl = pl+1;
@@ -69,8 +72,6 @@ for r = 1:length(ROIs)
             txt = [txt '_r2-' num2str(minR2)];end
         niceSave([dirOf(pwd) 'figures/' expt '/lineCoverage/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
     end
-    
-    
 end % ROIs
 
 if onLaptop playSound; end

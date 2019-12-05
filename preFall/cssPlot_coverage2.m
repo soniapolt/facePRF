@@ -2,14 +2,14 @@
 % this version is for performing stats, not plotting
 clear all; close all;
 
-subjs = {'TH' 'JG' 'DF' 'MG' 'EM' 'SP'};
+subjs = prfSubjs;%{ 'JP' 'MH' 'JW'};%'TH' 'JG' 'DF' 'MG' 'EM' 'SP'
 tasks = {'fix'};
 expt = 'fixPRF';
 
 saveFig = 1;
 
 minR2 = 20;          % cutoff for vox selection
-ROIs= standardROIs;
+ROIs= standardROIs('face+');
 conds = [2 1]; 
 covLims = [0 1]; % min and max for plotting coverage
 fitSuffix = '';%'_orig';%
@@ -17,7 +17,7 @@ fitSuffix = '';%'_orig';%
 whichStim = 'photo';%'internal';%
 whichModel = 'kayCSS';%'cssExpN';%'cssShift';%
 
-hems = {'lh'};
+hems = {'rh' 'lh'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % load in data, sort plotVox           %

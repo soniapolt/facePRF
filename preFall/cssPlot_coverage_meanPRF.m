@@ -6,18 +6,18 @@
 
 clear all; close all;
 
-subjs = {'SP' 'DF' 'EM' 'TH' 'MG' 'JG'};%;
 expt = 'fixPRF';
+subjs = prfSubjs;
 
 minR2 = 20;          % cutoff for vox selection
-ROIs= standardROIs('face'); %
-sampleVox = 0; % how many randomly selected voxels are we plotting?
+ROIs= standardROIs('face+'); %
 
-saveFig = 0;
+saveFig = 1;
 
-whichStim = 'photo';%'internal';%
+whichStim = 'outline';%'photo';%'internal';%
 whichModel = 'kayCSS';%''cssExpN';%cssShift';%
 whichM = 'median';
+plotSuffix = ''; %'example_';
 
 fitSuffix = '';
 
@@ -29,35 +29,29 @@ hems = {'lh' 'rh'};
 
 fontSize = 12; titleSize = 14;
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  create supertitle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if exist('task','var');
-    titleText = [task ' task, ']; else titleText = [];end
-titleText = [hemText(hems) ' ' whichModel ' ' titleText ', Subjs: ' strTogether(subjs) ...
-    ' (R^2 > ' num2str(minR2) ', sampleVox = ' num2str(sampleVox) '), ' whichStim];
 
-if onLaptop niceFig([.1 .1 .8 .8],fontSize); else
-    niceFig([0 .2 .6 .25*(size(comps,1)+1)],fontSize); end
-numPlots = [2 length(ROIs)]; pl = 1;
+titleText = [hemText(hems) ' ' whichModel ', Subjs: ' strTogether(subjs) ...
+    ' (R^2 > ' num2str(minR2) '), ' whichStim];
+
+if onLaptop niceFig([.1 .1 .8 .8],fontSize,1); else
+    niceFig([0 .2 .6 .25*(size(comps,1)+1)],fontSize,1); end
+numPlots = [1 2]; pl = 1;
 % now we load in the data from both hemispheres, and threshold across
 load(pRFfile(dirOf(pwd),expt,minR2,whichStim,whichModel,hems,fitSuffix));
 
 ROInum = cellNum(ROIs,info.ROIs);
 subjNum = cellNum(subjs,info.subjs);
+subj = subj(subjNum);
 
-for r = 1:length(ROIs)
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %for h = 1:length(hems)
-    
-    
-    % 1) coverage,
-    for c = 1:2%fliplr([1:length([roi(1).fits])])
-        subplot(numPlots(1),numPlots(2),length(ROIs)*(c-1)+r)
-        plotMeanCoverage(subj,whichM,r,c,condColors(3),3.2,1);
-        t = title([ROIs{r} ' ' roi(1).fits(c).cond]);
+% 1) coverage,
+    for c = fliplr([1:length([roi(1).fits])])
+        %subplot(numPlots(1),numPlots(2),length(ROIs)*(c-1)+r)
+        subplot(numPlots(1),numPlots(2),c)
+        plotMeanCoverage(subj,whichM,ROInum,c,3.2,ROIs);
+        t = title([roi(1).fits(c).cond]);
         set(t,'visible','on');
     end
     
@@ -65,12 +59,10 @@ for r = 1:length(ROIs)
     
     superTitle(titleText,titleSize,.05);
     if saveFig
-        
-        txt = ['mean_' hemText(hems) ROIs{r} '_' whichModel  '_' whichStim];
+        txt = ['mean_' hemText(hems) '_' plotSuffix  whichModel  '_' whichStim];
         if ~isequal(minR2,20)
             txt = [txt '_r2-' num2str(minR2)];end
-        niceSave([dirOf(pwd) 'figures/' expt '/lineCoverage/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
+        niceSave([dirOf(pwd) 'figures/' expt '/meanPRF/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
     end
     
-end % ROIs
 if onLaptop playSound; end

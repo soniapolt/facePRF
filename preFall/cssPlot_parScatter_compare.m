@@ -18,7 +18,7 @@ minR2 = 50;          % cutoff for vox selection
 ROIs= {'hV4' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4'
 
 whichStim = 'photo';%'internal';%
-whichModel = 'kayCSS';%'cssExpN';%'cssShift';%
+whichModel = 'tempCSSn';%'cssExpN';%'cssShift';%
 whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
 hems = {'rh' 'lh'};
 fitSuffix = '';%'_orig';%

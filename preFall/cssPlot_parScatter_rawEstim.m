@@ -2,24 +2,26 @@
 
 clear all; close all;
 
-subjs = {'SP' 'MG' 'JG' 'TH' 'EM' 'DF' };%
+subjs = {'george'};%{'SP' 'MG' 'JG' 'TH' 'EM' 'DF' };%
 task = '';
-expt = 'fixPRF';
+expt = 'nhp';%'fixPRF';
 noCenters = 0;
 
 saveFig = 0;
 convertDVA = 1; % convert X and Y measurements into DVA
 
 minR2 = 20;          % cutoff for vox selection
-ROIs= {'hV4' 'mFus_faces'};%standardROIs;%'V1' 'V2' 'V3' 'hV4'
+ROIs= {'PL' 'ML'};%{'hV4' 'mFus_faces'};%standardROIs;%'V1' 'V2' 'V3' 'hV4'
 
-whichStim = 'internal';%'photo';%'external';%
+whichStim = 'photo';%'internal';%'photo';%'external';%
 whichModel = 'kayCSS';%'cssExpN';%'cssShift';%
 whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
-hems = {'rh' 'lh'};
+hems = {''};%{'rh' 'lh'};
 fitSuffix = '';%'_orig';%
 
 switch expt
+    case 'nhp'
+        baseCond = [2]; compConds = [1];
     case 'fixPRF'
         baseCond = [2]; compConds = [1];
     case 'compPRF'
@@ -76,7 +78,7 @@ for p = 1:length(roi(1).fits(1).parNames)
         end
             
             scatterCent(bPars,cPars,condColors(compConds(c)),...
-                roi(ROInum(r)).fits(baseCond).cond,roi(ROInum(r)).fits(compConds(c)).cond,[ROIs{r} ' (' num2str(length(roi(r).fits(1).vox)) ' vox)'],fontSize);
+                roi(ROInum(r)).fits(baseCond).cond,roi(ROInum(r)).fits(compConds(c)).cond,[ROIs{r} ' (' num2str(length(roi(r).fits(1).vox)) ' vox)'],fontSize,1,1);
             
             if containsTxt(roi(1).fits(1).parNames{p},'gain') % cut off gain plots
             xlim([0 10]); ylim([0 10]); end
@@ -100,7 +102,8 @@ for p = 1:length(roi(1).fits(1).parNames)
             if ~containsTxt(whichStim,'photo')
             txt = [whichStim '_' txt];  end
             txt = ['scatter_' whichModel '_' txt];
-            niceSave([dirOf(pwd) 'figures/' expt '/params/'],txt); % just save pngs, since these can be generated pretty quickly
+            niceSave([dirOf(pwd) 'figures/' expt '/params/'],txt);
+            set(gcf,'Renderer','Painters');% just save pngs, since these can be generated pretty quickly
         end
     end
 end

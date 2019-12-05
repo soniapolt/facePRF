@@ -6,32 +6,29 @@
 
 clear all; close all;
 
-subjs = {'SP'};% 'DF' 'EM' 'TH' 'MG' 'JG'};%;
-expt = 'fixPRF';
+subjs = prfSubjs;%{'SP' 'DF' 'EM' 'TH' 'MG' 'JG'};%{'george'};%;
+expt = 'fixPRF';%'nhp';%'
 
-minR2 = 20;          % cutoff for vox selection
-ROIs= {'hV4'};%standardROIs; %
+minR2 = 'r2-20';%'perc-50';          % cutoff for vox selection
+ROIs= standardROIs;%['hV4' standardROIs('face')]; %{'ML' 'PL'};%{};%('face')
 % manual set of baseCond + compConds
 % [baseCond, compCond], more flexibly defined
-if containsTxt(expt,'compPRF')
-base = 1; comps = [1 2; 1 3; 2 3];
-elseif containsTxt(expt,'fixPRF')
-base =2; comps = [2 1]; end
+base = 2; comps = [2 1];
 
-saveFig = 0;
+saveFig = 1;
 
-whichStim = 'photo';%'internal';%
-whichModel = 'kayCSS';%''cssExpN';%cssShift';%
+whichStim = 'outline';%'edge';%'binary';%'internal';%
+whichModel = 'kayCSS';%'inflipCSSn';%'kayCSS';%'tempCSSn';%'%cssShift';%
 fitSuffix = '';
 
-hems = {'lh' 'rh'};
+hems = {'lh' 'rh'};%{''};%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % what to plot?                        %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plotBasics = 1;
-plotBaselines = 1;
-plotXY = 1;
+%plotBaselines = 0;
+plotXY =1;
 plotSize = 1;
 
 fontSize = 12; titleSize = 14;
@@ -43,12 +40,13 @@ subjNum = cellNum(subjs,info.subjs);
 
 for r = 1:length(ROIs)
 if length(subjNum) == 1 bFits = subj(subjNum).roi(ROInum(r)).fits; 
+elseif length(subjNum)== 0 error('Missing this subject in prfSet!');
 else bFits =roi(ROInum(r)).fits; end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %  create supertitle
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if exist('task','var');
+    if exist('task','var')
         titleText = [task ' task, ']; else titleText = [];end
     titleText = [whichModel ' ' titleText hemText(hems) ' ' ROIs{r} ', Subjs: ' strTogether(subjs) ...
     ' (' num2str(length(bFits(1).vox)) ' voxels R^2 > ' num2str(minR2) '), ' whichStim];
@@ -75,7 +73,8 @@ else bFits =roi(ROInum(r)).fits; end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % 1) coverage, baseCond
         subplot(numPlots(1),numPlots(2),pl)
-        plotCoverage(bFits(base).vox,condColors(base),bFits(base).cond,roi(1).fits(1).ppd,roi(1).fits(1).res,1);
+        % plotCoverage(vox,color,leg,ppd,res,plotSize,alphaGain,sampleVox,centerMass,plotCirc)
+        plotCoverage(bFits(base).vox,condColors(base),bFits(base).cond,roi(1).fits(1).ppd,roi(1).fits(1).res,0);
         pl = pl+1;
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -95,7 +94,7 @@ else bFits =roi(ROInum(r)).fits; end
         % 3) stim example
         subplot(numPlots(1),numPlots(2),pl)
         load([dirOf(pwd) 'cssFit/' roi(1).fits(1).stim]);
-        imshow(condAvg(:,:,30)); title(['Sample pRF Stim Coding (' roi(1).fits(2).cond ')'],'fontSize',titleSize);
+        imshow(condAvg(:,:,1)); title(['Sample pRF Stim Coding (' roi(1).fits(1).cond ')'],'fontSize',titleSize);
         pl = pl+1;
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -105,7 +104,7 @@ else bFits =roi(ROInum(r)).fits; end
         for c = 2:length(bFits)
             allr2s = [allr2s; [bFits(c).vox.r2]];
         end
-        boxplot(allr2s',{bFits(1:end).cond},'colors',[condColors(1:length(bFits))]); hold on; hline(minR2,'k:','cutoff');
+        boxplot(allr2s',{bFits(1:end).cond},'colors',[condColors(1:length(bFits))]); hold on; %hline(minR2,'k:','cutoff');
         title('R^{2} Values for plotted fits','fontSize',titleSize);
         axis square;
         pl = pl+1;
@@ -116,14 +115,14 @@ else bFits =roi(ROInum(r)).fits; end
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % col 1) coverage
             subplot(numPlots(1),numPlots(2),pl)
-            plotCoverage(bFits(c).vox,condColors(c),bFits(c).cond,roi(1).fits(1).ppd,roi(1).fits(1).res,1);
+            plotCoverage(bFits(c).vox,condColors(c),bFits(c).cond,roi(1).fits(1).ppd,roi(1).fits(1).res,0);
             pl = pl+1;
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % col 4) eccen vs basecond
             subplot(numPlots(1),numPlots(2),pl)
             scatterCent([bFits(baseCond).vox.eccen],[bFits(c).vox.eccen],condColors(c),...
-                bFits(baseCond).cond,bFits(c).cond,'Eccen (dva)',fontSize);
+                bFits(baseCond).cond,bFits(c).cond,'Eccen (dva)',fontSize,1,1);
             pl = pl+1;
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -131,21 +130,21 @@ else bFits =roi(ROInum(r)).fits; end
             subplot(numPlots(1),numPlots(2),pl)
             
             scatterCent([bFits(baseCond).vox.size],[bFits(c).vox.size],condColors(c),...
-                bFits(baseCond).cond,bFits(c).cond,'Size (2*SD/sqrt(N)) (dva)',fontSize);
+                bFits(baseCond).cond,bFits(c).cond,'Size (2*SD/sqrt(N)) (dva)',fontSize,1,1);
             pl = pl+1;
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % col 5) r2 vs basecond
             subplot(numPlots(1),numPlots(2),pl)
             scatterCent([bFits(baseCond).vox.r2],[bFits(c).vox.r2],condColors(c),...
-                bFits(baseCond).cond,bFits(c).cond,'R^{2}',fontSize);
+                bFits(baseCond).cond,bFits(c).cond,'R^{2}',fontSize,1,1);
             pl = pl+1;
         end
         
         
         superTitle(titleText,titleSize,.05);
         if saveFig 
-        txt = [ whichModel  '_' whichStim '_basics'];
+        txt = [hemText(hems) '_' whichModel  '_' whichStim '_basics'];
         niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
         end
         
@@ -181,7 +180,7 @@ else bFits =roi(ROInum(r)).fits; end
             baselines = [baselines;bFits(c).vox.baseline]; end
         
         boxplot(baselines',{bFits(1:end).cond},'colors',[condColors(1:length(bFits))]);hline(0,'k-');
-        title('Baseline Estim. Across Conditions','fontSize',fontSize);
+        title('Baseline Estim. Across Conditions','fontSize',fontSize,1,1);
         axis square;
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -191,12 +190,12 @@ else bFits =roi(ROInum(r)).fits; end
             c = comps(cc,2);
             subplot(numPlots(1),numPlots(2),1+cc)
             scatterCent([bFits(baseCond).vox.baseline],[bFits(c).vox.baseline],condColors(c),...
-                bFits(baseCond).cond,bFits(c).cond,'Baselines (no outlier trim)',fontSize);
+                bFits(baseCond).cond,bFits(c).cond,'Baselines (no outlier trim)',fontSize,1,1);
         end
         
         superTitle(titleText,titleSize,.97)
         if saveFig 
-        txt = [ whichModel '_' whichStim '_baselines'];
+        txt = [hemText(hems) '_' whichModel '_' whichStim '_baselines'];
         niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
         end
     end
@@ -237,41 +236,58 @@ else bFits =roi(ROInum(r)).fits; end
             axes('Position',[pos(1) pos(2)+pos(4)-2*legSz legSz legSz]);
             drawcolorbarcircular(cmapang,1);
             
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % 2) shifts colored by in/out
-            subplot(numPlots(1),numPlots(2),pl)
-            [angles{c}, lengths{c}, sign{c}] = plotXYshift2(bFits(baseCond).vox,bFits(c).vox,roi(1).fits(1).ppd,roi(1).fits(1).res);
-            title(['{\color{red}Toward\color{black}-\color{blue}Away From\color{black} Center}'],'FontSize',titleSize);
-            set(get(gca,'title'),'Visible','on');
-            pl = pl+1;
+%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%             % 2) shifts colored by in/out
+%             subplot(numPlots(1),numPlots(2),pl)
+%             [angles{c}, lengths{c}, sign{c}] = plotXYshift2(bFits(baseCond).vox,bFits(c).vox,roi(1).fits(1).ppd,roi(1).fits(1).res);
+%             title(['{\color{red}Toward\color{black}-\color{blue}Away From\color{black} Center}'],'FontSize',titleSize,'interpreter','tex');
+%             set(get(gca,'title'),'Visible','on');
+%             pl = pl+1;
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % 3) magnitude of shift histogram - now signed toward/away from
-            % eccen
+            
+            % 3) magnitude of X change histogram 
             subplot(numPlots(1),numPlots(2),pl)
-            niceHist((lengths{c}/roi(1).fits(1).ppd.*sign{c}),condColors(c),1);
-            xlabel('Magnitude of Shift (dva)'); ylabel('Count');
-            title(['XY Shift Magnitude'],'FontSize',titleSize);
+            shift = [];
+            for v = 1:length(bFits(1).vox)
+                shift(end+1) = bFits(baseCond).vox(v).XYdeg(1)- bFits(c).vox(v).XYdeg(1);
+            end
+            niceHist(shift,condColors(c),1);
+            xlabel('Magnitude of X Shift (dva)'); ylabel('Count');
+            title(['X Shift Magnitude'],'FontSize',titleSize);
+            pl = pl+1;
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % 3) magnitude of Y change histogram 
+            subplot(numPlots(1),numPlots(2),pl)
+            shift = [];
+            for v = 1:length(bFits(1).vox)
+                shift(end+1) = bFits(baseCond).vox(v).XYdeg(2)- bFits(c).vox(v).XYdeg(2);
+            end
+            niceHist(shift,condColors(c),1);
+            xlabel('Magnitude of Y Shift (dva)'); ylabel('Count');
+            title(['Y Shift Magnitude'],'FontSize',titleSize);
             pl = pl+1;
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % 4) shifts by eccen
             subplot(numPlots(1),numPlots(2),pl)
-            scatterCent([bFits(baseCond).vox.eccen],lengths{c}/roi(1).fits(1).ppd.*sign{c},condColors(c),...
-                'Eccen (dva)','Magnitude of Shift (dva)','',fontSize,1);
-            title(['XY Shift by Eccen'],'FontSize',titleSize);
+            scatterCent([bFits(baseCond).vox.eccen],shift,condColors(c),...
+                'Eccen (dva)','Magnitude of Shift (dva)','',fontSize,0,2);
+            title(['Y Shift by Eccen'],'FontSize',titleSize);
             
             pl = pl+1;
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % 5) shifts by r2
             subplot(numPlots(1),numPlots(2),pl);
-            scatterCent([bFits(c).vox.r2],[lengths{c}/roi(1).fits(1).ppd.*sign{c}],[.5 .5 .5],...
-                'R^2','Shift','',fontSize,1);
-            title(['XY Shift by R^2'],'FontSize',titleSize);
+            deltaR2 = [bFits(2).vox.r2] - [bFits(1).vox.r2];
+            scatterCent(deltaR2,shift,[.5 .5 .5],...
+                'Delta R^2','Shift','',fontSize,0,2);
+            title(['Y Shift by R^2'],'FontSize',titleSize);
             pl = pl+1;
         end
         if saveFig 
-        txt = [ whichModel '_' whichStim  '_XYshift'];
+        txt = [hemText(hems) '_' whichModel '_' whichStim  '_XYshift'];
         niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
         end
         superTitle(['XY Shift: ' titleText],titleSize,.97);
@@ -299,7 +315,7 @@ else bFits =roi(ROInum(r)).fits; end
             % 1) dot plot of size changes
             subplot(numPlots(1),numPlots(2),pl)
             [sizeCh{c}] = plotSizeChange(bFits(baseCond).vox,bFits(c).vox,roi(1).fits(1).ppd,roi(1).fits(1).res);
-            title(['{\color{red}Bigger\color{black}-\color{blue}Smaller \color{black}}'],'FontSize',titleSize);
+            title(['{\color{red}Bigger\color{black}-\color{blue}Smaller \color{black}}'],'FontSize',titleSize,'interpreter','tex');
             set(get(gca,'title'),'Visible','on');
             
             ylabel([bFits(baseCond).cond ' to ' bFits(c).cond],'FontSize',titleSize+8,'FontWeight','bold');
@@ -318,27 +334,28 @@ else bFits =roi(ROInum(r)).fits; end
             % 3) size ch vs eccen
             subplot(numPlots(1),numPlots(2),pl)
             scatterCent([bFits(baseCond).vox.eccen],(sizeCh{c}/roi(1).fits(1).ppd),condColors(c),...
-                'Eccen (dva)','Size Change (dva)','',fontSize,1);
+                'Eccen (dva)','Size Change (dva)','',fontSize,0,2);
             title(['Size Changeby Eccen'],'FontSize',titleSize);
             pl = pl+1;
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % 4) size change by r2
             subplot(numPlots(1),numPlots(2),pl);
-            scatterCent([bFits(c).vox.r2],[sizeCh{c}/roi(1).fits(1).ppd],[.5 .5 .5],...
-                'R^2','Size Change (dva)','',fontSize,1);
+            deltaR2 = [bFits(2).vox.r2] - [bFits(1).vox.r2];
+            scatterCent(deltaR2,[sizeCh{c}/roi(1).fits(1).ppd],[.5 .5 .5],...
+                'Delta R^2','Size Change (dva)','',fontSize,0,2);
             title(['Size Change by R^2'],'FontSize',titleSize);
             pl = pl+1;
             
         end
         superTitle(['Size Changes: ' titleText],titleSize,.97);
         if saveFig 
-        txt = [ whichModel '_' whichStim  '_sizeChange'];
+        txt = [hemText(hems) '_' whichModel '_' whichStim  '_sizeChange'];
         niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
         end
         
     end
-    if saveFig close all; end
+    %if saveFig close all; end
 end % ROIs
 
 if onLaptop playSound; end

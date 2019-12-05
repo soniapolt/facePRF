@@ -1,6 +1,6 @@
 clear all; %close all;
 
-subj = 'SP';
+subj = 'JP';
 sessNum = 1;
 expt = 'fixPRF';
 
@@ -9,7 +9,7 @@ switch expt
                 [session, numRuns] = vpnlSessions(expt,subj,sessNum,'fix');
                 numTRs = 186;
             case 'fixPRF'
-                [session, numRuns] = vpnlSessions(expt,subj,sessNum);
+                [session, numRuns] = vpnlSessions(expt,subj);
                 numTRs = 136;
             case 'compPRF'
                 [session, numRuns] = vpnlSessions(expt,subj,sessNum);
@@ -19,9 +19,9 @@ end
 %if containsText(subj,'SP') session = [session '_0']; end
 
 whichStim = 'photo';
-whichModel = 'cssShift';
+whichModel = 'kayCSS';
 
-ROI ='rh_mFus_faces';%'lh_V2';%'rh_V2';%
+ROI ='rh_mSTS_faces';%'rh_V1';%'%%'lh_V2';%
 
 voxNum =1; % if 0, random
 sp1=4; sp2=ceil(numRuns/sp1);
@@ -29,15 +29,17 @@ sp1=4; sp2=ceil(numRuns/sp1);
 
 [dataName, fitsName] = fitsDirs(dirOf(pwd),expt,session,whichStim,vpnlROI(ROI,subj),whichModel);
 load(dataName);
+fprintf('Loading data: %s...\n',dataName);
 
+[val,sortVox] = sort(mv.glm.varianceExplained,2,'descend');
 
-[~,sortVox] = sort(mv.glm.varianceExplained,2,'descend');
 
 if voxNum==0
     voxNum = randi(size(mv.tSeries,2)); 
 else voxNum = sortVox(voxNum); end
 
-%voxNum = 10;
+% sortVox(isnan(val))
+% voxNum = sortVox(3);
 TCs = mv.tSeries(:,voxNum);
 TCs = reshape(TCs,numRuns,numTRs);
 
