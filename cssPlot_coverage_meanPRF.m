@@ -52,7 +52,7 @@ for rr = 1:length(ROInum)
    subplot(numPlots(1),numPlots(2),rr)
 % 1) coverage,
     for c = fliplr([1:length([roi(1).fits])])
-        plotMeanCoverage(subj,whichM,r,c,3.2,[],condColors(rr,1)*hue(c));
+        plotMeanCoverage(subj,whichM,r,c,3.2,[],roiColors(ROIs(rr))*hue(c));
         t = title([roi(1).fits(c).cond]);
         set(t,'visible','on');
     end
@@ -67,7 +67,7 @@ end
             txt = [txt '_r2-' num2str(minR2)];
         else txt = [txt '_' minR2];
         end
-        niceSave([dirOf(pwd) 'figures/' expt '/meanPRF/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
+        niceSave([dirOf(pwd) 'figures/' expt '/meanPRF/'],txt,[],subjs,{'svg'}); % just save pngs, since these can be generated pretty quickly
     end
     
 if onLaptop playSound; end
