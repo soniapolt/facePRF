@@ -9,13 +9,15 @@ clear all; close all;
 subjs = prfSubjs;%{'SP' 'DF' 'EM' 'TH' 'MG' 'JG'};%{'george'};%;
 expt = 'fixPRF';%'nhp';%'
 
-minR2 = 'r2-50';%'perc-50';          % cutoff for vox selection
+minR2 = 'r2-20';%'perc-50';          % cutoff for vox selection
 ROIs= {'mFus_faces'};%standardROIs;%['hV4' standardROIs('face')]; %{'ML' 'PL'};%{};%('face')
 % manual set of baseCond + compConds
 % [baseCond, compCond], more flexibly defined
 base = 2; comps = [2 1];
 
 saveFig = 1;
+
+sampleVox = 300; % number of voxels to grab for plotting
 
 whichStim = 'outline';%'edge';%'binary';%'internal';%
 whichModel = 'kayCSS';%'inflipCSSn';%'kayCSS';%'tempCSSn';%'%cssShift';%
@@ -42,6 +44,10 @@ for r = 1:length(ROIs)
 if length(subjNum) == 1 bFits = subj(subjNum).roi(ROInum(r)).fits; 
 elseif length(subjNum)== 0 error('Missing this subject in prfSet!');
 else bFits =roi(ROInum(r)).fits; end
+
+randVox = datasample([1:length(bFits(1).vox)],sampleVox,'Replace',false);
+for c = 1:length(bFits)
+    bFits(c).vox = bFits(c).vox(randVox); end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %  create supertitle
@@ -145,7 +151,7 @@ else bFits =roi(ROInum(r)).fits; end
         superTitle(titleText,titleSize,.05);
         if saveFig 
         txt = [hemText(hems) '_' whichModel  '_' whichStim '_basics'];
-        niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
+        niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs,{'svg'}); % just save pngs, since these can be generated pretty quickly
         end
         
         %     for c = 1:2
@@ -196,7 +202,7 @@ else bFits =roi(ROInum(r)).fits; end
         superTitle(titleText,titleSize,.97)
         if saveFig 
         txt = [hemText(hems) '_' whichModel '_' whichStim '_baselines'];
-        niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
+        niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs,{'svg'}); % just save pngs, since these can be generated pretty quickly
         end
     end
     
@@ -288,7 +294,7 @@ else bFits =roi(ROInum(r)).fits; end
         end
         if saveFig 
         txt = [hemText(hems) '_' whichModel '_' whichStim  '_XYshift'];
-        niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
+        niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs,{'svg'}); % just save pngs, since these can be generated pretty quickly
         end
         superTitle(['XY Shift: ' titleText],titleSize,.97);
     end
@@ -351,7 +357,7 @@ else bFits =roi(ROInum(r)).fits; end
         superTitle(['Size Changes: ' titleText],titleSize,.97);
         if saveFig 
         txt = [hemText(hems) '_' whichModel '_' whichStim  '_sizeChange'];
-        niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
+        niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs,{'svg'}); % just save pngs, since these can be generated pretty quickly
         end
         
     end
