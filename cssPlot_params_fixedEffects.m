@@ -5,11 +5,11 @@ clear all; close all;
 subjs = prfSubjs;%{'MG' 'JG' 'TH' 'EM' 'DF' 'SP'};%
 expt = 'fixPRF';
 
-saveFig =1 ;
+saveFig =1;
 convertDVA = 1;
 
 minR2 = 'r2-20';%['perc-50'];          % cutoff for vox selection
-ROIs= standardROIs;%('face+')
+ROIs= {'mFus_faces'};%standardROIs;%('face+')
 
 whichStim = 'outline';%'photo';%'eyes';%'internal';%
 whichModel = 'kayCSS';%'flipCSSn';%'cssExpN';%'cssShift';%
@@ -55,22 +55,24 @@ titleText = [titleText strTogether(subjs) ' (voxels R^2 > ' num2str(minR2) '), '
     subplot(numPlots(1),numPlots(2),pl)
     
     for c = 1:length(roi(1).fits)
-        parNum = cellNum(plotPars{p},fits(1).parNames);
-            if ~isempty(parNum)
-                pars = vertcat(fits(c).vox.params);
-                cPars{c} = pars(:,parNum)';
-            else
-                eval(['cPars{c} = [fits(c).vox.' plotPars{p} '];']);  end
         
-         
-        % rescale some parameters so that they are in DVA units and
-        % centered around zero (center of screen)
-        if convertDVA && containsTxt(plotPars{p},'Y') || containsTxt(plotPars{p},'X') || containsTxt(plotPars{p},'sd')
-        if ~containsTxt(plotPars{p},'sd') % don't re-center the SD
-            cPars{c} = fits(1).res-cPars{c}-roi(1).fits(1).res/2;
-        end
-        cPars{c} = cPars{c}./roi(1).fits(1).ppd;
-        end
+        cPars{c} = getPar(plotPars{p},fits(c),1);
+%         parNum = cellNum(plotPars{p},fits(1).parNames);
+%             if ~isempty(parNum)
+%                 pars = vertcat(fits(c).vox.params);
+%                 cPars{c} = pars(:,parNum)';
+%             else
+%                 eval(['cPars{c} = [fits(c).vox.' plotPars{p} '];']);  end
+%         
+%          
+%         % rescale some parameters so that they are in DVA units and
+%         % centered around zero (center of screen)
+%         if convertDVA && containsTxt(plotPars{p},'Y') || containsTxt(plotPars{p},'X') || containsTxt(plotPars{p},'sd')
+%         if ~containsTxt(plotPars{p},'sd') % don't re-center the SD
+%             cPars{c} = fits(1).res-cPars{c}-roi(1).fits(1).res/2;
+%         end
+%         cPars{c} = cPars{c}./roi(1).fits(1).ppd;
+%         end
     end 
     
     switch plotType{p}
@@ -123,7 +125,7 @@ if saveFig == 1
     if length(hems) == 1
         txt = [txt '_' hems{1}]; end
         txt = ['fixedE_' whichModel '_' whichStim '_' txt];
-    niceSave([dirOf(pwd) 'figures/' expt '/params/'],txt); % just save pngs, since these can be generated pretty quickly
+    niceSave([dirOf(pwd) 'figures/' expt '/params/'],txt,[],[],{'svg'}); % just save pngs, since these can be generated pretty quickly
 end
 end
 if onLaptop playSound; end

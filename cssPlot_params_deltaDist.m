@@ -15,9 +15,8 @@ whichStim = 'outline';%'photo';%'internal';%'eyes';%
 whichModel = 'kayCSS';%'inflipCSSn';%'flipCSSn';%'cssExpN';%'cssShift';%
 whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
 mS = {'mean' 'mode' 'median'};
-plotPars = {'Y'}%{'gain' 'r2' 'Y' 'X' 'size'};
-parTitles = {'Y Estim.'};%{'Gain Estim' 'Estimated R^{2}' 'Y Estim.' 'X Estim.' 'Size [2xSD/sqrt(N)] (dva)'};
-plotType = {'distr'};%{'box' 'distr' 'distr' 'distr' 'box'}; % bars, distr, or delta
+plotPars = {'gain' 'r2' 'Y' 'X' 'size'};%{'Ydeg'}%
+parTitles = {'Gain Estim' 'Estimated R^{2}' 'Y Estim.' 'X Estim.' 'Size [2xSD/sqrt(N)] (dva)'};
 
 hems = {'lh' 'rh'};
 fitSuffix = '';%'_orig';%
@@ -59,6 +58,7 @@ for p = 1:length(plotPars)
         for c = 1:length(roi(1).fits)
             for s = 1:length(subjNum)
                 fits = subj(subjNum(s)).roi(ROInum(r)).fits(c);
+                
                 try
                 cPars{c} = getPar(plotPars{p},fits,1);
                 catch cPars{c} = NaN; end % missing ROIs
@@ -69,59 +69,26 @@ for p = 1:length(plotPars)
             end
         end
         hues = [1 .5];
-        switch plotType{p}
-            case 'bars'
-                niceBars2(mPars,mS{whichM},1,{fits.cond},[roiColors(ROIs(r)).*hues(1); roiColors(ROIs(r)).*hues(2)]);
-            case 'delta'
-                niceBars2(mPars(:,2)-mPars(:,1),mS{whichM},1,[{fits(2).cond ' - ' fits(1).cond}],roiColors(ROIs(r)));
-            case 'distr'
-                if containsTxt(plotPars{p},'size')
-                    xl = [0 10] ;
-                else xl = [-5 5]; end
-                %plotMeanDistr(cData,nBins,color,whichM)
-                
-                for c = 1:length(roi(1).fits)
-                    [h,meds, normcounts] = plotMeanDistr(sPars(:,c),nBins,roiColors(ROIs(r)).*hues(c),1);xlim(xl);
-                end
-                %ylim([0 nanmax(normcounts(:))]);
-                %                 sample1 = sPars{:,1};
-                %                 [pv, od, effectsize] = permutationTest(sPars{:,1}, sPars{:,2}, 1000), ...
-                %                      'plotresult', 1, 'showprogress', 0);
-                %                  fprintf('%s Permutation Test, %s: p = %.6f, observed difference = %.2f\n ',...
-                %                      whichModel, plotPars{p},pv,od);
-            case 'deltadist'
-                if containsTxt(plotPars{p},'size')
-                    xl = [0 10] ;
-                else xl = [-5 5]; end
-                for n = 1:length(sPars)
-                    dPars{n} = sPars{n,2}-sPars{n,1};
-                end
-                [h,peak, normcounts] = plotMeanDistr(dPars,nBins,roiColors(ROIs(r))); xlim(xl);
-            case 'box'
-                if containsTxt(plotPars{p},'gain')
-                    yl = [0 5];
-                elseif containsTxt(plotPars{p},'r2')
-                    yl = [0 100];
-                elseif containsTxt(plotPars{p},'size')
-                    yl= ([0 5]);
-                else yl = [];
-                end
-                niceBoxplot(mPars,{fits(1).cond fits(2).cond},1,[roiColors(ROIs(r)).*hues(1); roiColors(ROIs(r)).*hues(2)],yl);
+        if containsTxt(plotPars{p},'size')
+            xl = [0 5] ;
+        else xl = [-2 2]; end
+        for n = 1:length(sPars)
+            dPars{n} = sPars{n,2}-sPars{n,1};
         end
+        [h,meds, normcounts] = plotMeanDistr(dPars,nBins,roiColors(ROIs(r))); %xlim(xl);
         set(gca,'TickDir','out');
         pl = pl+1;
         axis square;
         
         [h,pv,ci] = ttest(mPars(:,2)-mPars(:,1));
         title({ROIs{r};parTitles{p};['ttest on medians: p=' num2str(pv)]},'fontSize',titleSize,'interpreter','none','FontWeight','bold');
-        %xlabel(roi(1).fits(1).parNames{p},'fontSize',titleSize);
     end
     superTitle(titleText,titleSize,.025);
     
     if saveFig == 1
         if length(subjs) == 1 txt = ['subj' subjs{1}]; else txt = ['groupN' num2str(length(subjs))]; end
         txt = [plotPars{p} '_' hemText(hems) '_' txt];
-        niceSave([dirOf(pwd) 'figures/' expt '/randomEffects/'],txt,[],[],{'png' 'svg'}); % just save pngs, since these can be generated pretty quickly
+        niceSave([dirOf(pwd) 'figures/' expt '/deltaDist/'],txt,[],[],{'png' 'svg'}); % just save pngs, since these can be generated pretty quickly
     end
 end
 if onLaptop playSound; end
