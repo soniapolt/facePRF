@@ -3,7 +3,7 @@
 
 clear all; close all;
 
-subjs = {'SP' 'MG' 'JG' 'TH' 'EM' 'DF' };%
+subjs = prfSubjs;
 task = '';
 expt = 'fixPRF';
 noCenters = 0;
@@ -15,10 +15,10 @@ trimGains = 5;
 plotConds = [1 2]; % allows us to just vis one condition at a time
 
 minR2 = 50;          % cutoff for vox selection
-ROIs= {'hV4' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4'
+ROIs= {'V1' 'mFus_faces'};%'V1' 'V2' 'V3' 'hV4'
 
-whichStim = 'photo';%'internal';%
-whichModel = 'tempCSSn';%'cssExpN';%'cssShift';%
+whichStim = 'outline';%'photo';%'internal';%
+whichModel = 'kayCSS';%tempCSSn';%'cssExpN';%'cssShift';%
 whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
 hems = {'rh' 'lh'};
 fitSuffix = '';%'_orig';%
