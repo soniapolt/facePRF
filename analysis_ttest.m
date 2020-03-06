@@ -4,19 +4,19 @@ clear all; close all;
 
 subjs = prfSubjs;%{'TH' 'DF' 'EM' 'JG' 'MG' 'SP'};
 expt = 'fixPRF';
-tests = {'Y' 'X' 'eccen' 'gain' 'size'}; % can be parname (Y,X,sd,gain,exp,shift) or pRF.read value (r2,size,eccen,gain)
+tests = {'Ydeg' 'Xdeg' 'eccen' 'gain' 'size'}; % can be parname (Y,X,sd,gain,exp,shift) or pRF.read value (r2,size,eccen,gain)
 whichM = 'median'; % mean or median
 
 
 r2cutoff = 'r2-20';%'perc-50';%          % cutoff for vox selection
-ROIs= standardROIs;%('face-');%{'mFus_faces'};%
+ROIs= standardROIs;%('face-');%
 fitSuffix = '';
-txtName = [r2cutoff];
 
-whichStim = 'photo';%'eyes';%
+
+whichStim = 'outline';%'eyes';%
 whichModel = 'kayCSS';
-hems = {'lh' 'rh'};
-
+hems = {'rh'};
+txtName = [hemText(hems) '_' r2cutoff];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % load data                            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -24,13 +24,13 @@ hems = {'lh' 'rh'};
 load(pRFfile(dirOf(pwd),expt,r2cutoff,whichStim,whichModel,hems,fitSuffix));
 ROInum = cellNum(ROIs,info.ROIs);
 subjNum = cellNum(subjs,info.subjs);
-checkDir('results/');
-    fid = fopen(['results/ttests_' txtName '_' whichModel '_' whichStim],'w+');
+checkDir([dirOf(pwd) 'stats/' expt '/ttests']);
+    fid = fopen([dirOf(pwd) 'stats/' expt '/ttests/ttests_' txtName '_' whichModel '_' whichStim '.txt'],'w+');
     
     
 comps = nchoosek(1:length(roi(1).fits),2);
-fprintf('\n%s\n\n**************\n',whichM);
-fprintf(fid,'\n%s\n\n**************\n',whichM);
+fprintf('\n%s %s\n\n**************\n',whichM, r2cutoff);
+fprintf(fid,'\n%s %s\n\n**************\n',whichM,r2cutoff);
 for t = 1:length(tests)
     test = tests{t};
     fprintf('-----\n%s:\n-----\n',test);

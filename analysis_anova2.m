@@ -38,8 +38,8 @@ parNames = roi(1).fits(1).parNames;
 
 % data formatting for: RMAOV33.m
 % each row = [data fact1# fact2# fact3# subj#];
-checkDir([pwd '/results']);
-    fid = fopen([pwd '/results/ANOVA2_' txtName '_' whichModel '_' whichStim],'w+');
+checkDir([dirOf(pwd) '/stats/' expt]);
+    fid = fopen([dirOf(pwd) '/stats/' expt '/ANOVA2_' txtName '_' whichModel '_' whichStim '.txt'],'w+');
 fprintf(fid,'\n**************\n%s, %s\n**************\n',whichM, strTogether(ROIs));
 fprintf(fid,['pRF file: %s\nROIs: ' repmat('%s ',1,length(ROIs)) '\n'],pF,ROIs{:});
 
@@ -118,3 +118,5 @@ for t = 1:length(tests)
     fprintf('N.S: \n%s%s\n',main.ns,int.ns);
 end
 fclose(fid);
+
+if onLaptop playSound; end
