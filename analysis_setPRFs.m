@@ -8,17 +8,17 @@ info.task = '';
 info.expt = 'fixPRF';%'nhp';%
 info.setNotes = '.1 min size + 10.9 max size (nov 2019)';
 
-info.whichCutoff ='r2';%'perc';%  % 'perc' or 'r2'
-info.cutoffVal = 20;      % cutoff for vox selection - either minR2 or percentile
+info.whichCutoff ='perc';%'perc';%  % 'perc' or 'r2'
+info.cutoffVal = 50;      % cutoff for vox selection - either minR2 or percentile
 info.whichPerc = 'min';   % min or mean
 
 if ~strcmp(info.whichCutoff,'perc') info.whichPerc = []; end
 
 info.ROIs= standardROIs;%{'V1' 'hV4' 'mFus_faces'};%{'PL' 'ML'};%
 
-info.whichStim ='internal';%'photo';%'outline';%'edge';%';% edge'%'
-info.whichModel ='intempCSSn';%'inflipCSSn';%'cssExpN';%'kayCSS';%'kayCSS';% .  %'cssShift';%
-info.hems = {'lh' 'rh'};% now will automatically also save rh- and lh- versions of the file
+info.whichStim ='outline';%'photo';%'internal';%'edge';%';% edge'%'
+info.whichModel ='kayCSS';%'inflipCSSn';%'intempCSSn';%'cssExpN';%'kayCSS';% .  %'cssShift';%
+info.hems = {'lh'};% now will automatically also save rh- and lh- versions of the file
 info.fitSuffix = ''; %'_orig';%
 
 saveFits = 1;
@@ -46,6 +46,7 @@ for r = 1:length(info.ROIs)
             for c = 1:length(fits)
                 for v = 1:length(fits(c).vox)
                         fits(c).vox(v).hem = h;
+                        fits(c).vox(v).stim = fits(c).stim; 
                 end
             end
                 
@@ -55,12 +56,6 @@ for r = 1:length(info.ROIs)
                     for c = 1:length(fits)
                         subj(s).roi(r).fits(c).vox = [subj(s).roi(r).fits(c).vox fits(c).vox];
                     end
-                end
-                
-                % add subject/stim info to each voxel representation
-                for f = 1:length(fits)
-                    for v = 1:length(fits(f).vox)
-                        fits(f).vox(v).stim = fits(f).stim; end
                 end
                 
                 if init
