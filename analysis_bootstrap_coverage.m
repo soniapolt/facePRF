@@ -9,11 +9,11 @@ clear all; close all;
 subjs = prfSubjs;%{'TH' 'DF' 'EM' 'JG' 'MG' 'SP'};
 expt = 'fixPRF';
 
-minR2 = 'r2-50';%['perc-50'];%20;          % cutoff for vox selection
+minR2 = 'r2-20';%['perc-50'];%20;          % cutoff for vox selection
 ROIs= standardROIs;
 plotIndivs = 1;
-computeCoverage = 1;
-contour = 1; % plot image or contour
+computeCoverage = 0;
+contour = 0; % plot image or contour
 
 whichStim = 'outline';
 whichModel = 'kayCSS';
@@ -22,7 +22,7 @@ hems = {'rh' 'lh'};
 
 boot.iters = 1000;
 boot.vox = 0.8; % now implements this as a proportion of total voxels, not an absolute number
-boot.method = 'mean';% 'max';%% 'mean' or 'max'
+boot.method = 'max';% 'max';%% 'mean' or 'max'
 boot.scaleSubjs = 0; % rescale each individual's coverage to [0 1]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
