@@ -6,7 +6,7 @@ clear all; close all;
 
 expt = 'fixPRF';
 
-minR2 = 50;          % cutoff for vox selection
+minR2 = 20;          % cutoff for vox selection
 ROIs= [standardROIs('EVC') standardROIs('face')];%('face');% 'V3' 'hV4' 'IOG_faces' 'pFus_faces','mFus_faces'
 sampleVox = 300; 
 saveFig = 1;
@@ -50,7 +50,7 @@ for r = 1:length(ROIs)
 
     for c = 1:length(fits)
         if c == 1 mult = .25; else mult = 1; end
-    s(c) = scatter([fits(c).vox(sv).eccen],[fits(c).vox(sv).size],5,roiColors(ROIs{r})*mult,'filled'); hold on;
+    s(c) = scatter([fits(c).vox(sv).eccen],[fits(c).vox(sv).size],2,roiColors(ROIs{r})*mult,'filled'); hold on;
     
     fitRange = [0:.5:8];
     
