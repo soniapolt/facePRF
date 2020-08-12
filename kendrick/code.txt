@@ -1,0 +1,190 @@
+%%%%%% SETUP
+
+COMMONLOAD;
+
+% define
+final = 1;
+subjagg = {1 2 3 [1 2 3]};
+stimdeg = 12.5;  % for simplicity
+
+% more
+roipools = ...
+  {[10]   [25]   [11 12] [26 27] [13 14] [28 29] [15]    [30]    [4]     [17]    [6]     [22]      [5]      [19]};
+roipoolnames = ...
+  {'V1_L' 'V1_R' 'V2_L' 'V2_R' 'V3_L' 'V3_R' 'hV4_L' 'hV4_R' 'IOG_L' 'IOG_R' 'pFus_L' 'pFus_R' 'mFus_L' 'mFus_R'};
+rpi = 1;
+
+% special (figuresalt2 ONLY!!)
+hardfilter = 1;
+hardcut = 50;
+
+% otherwise:
+hardfilter = 0;
+
+%%%%%% DO IT
+for si=1:length(subjagg)
+
+  allims = []; %allimsBOOT = [];
+  for ri=1:length(roipools)
+    wtf = cat(2,results{subjagg{si},roipools{ri}});
+    
+    if isempty(wtf)
+      continue;  % BE CAREFUL!
+    end
+    
+    % collect quantities
+    R2 = cat(1,wtf.R2);
+    x = cat(1,wtf.x);
+    y = cat(1,wtf.y);
+    sz = cat(1,wtf.sz);
+
+    % centers, all (dot weighted by R2 (or hard cut))
+    figureprep([100 100 500 500]); hold on;
+    axis([-stimdeg stimdeg -stimdeg stimdeg]);
+%    ii = permutedim(1:length(x));
+    if hardfilter
+      ii = R2 >= hardcut;
+      scatter(x(ii),y(ii),100,'r.');
+    else
+      [d,ii] = sort(R2,'descend');
+      scatter(x(ii),y(ii),100,R2(ii),'.');
+      caxis([0 100]);
+      colormap(flipud(gray));
+    end
+    set(drawrectangle(0,0,stimdeg,stimdeg,'r-'),'LineWidth',2);
+    straightline(0,'h','b-');
+    straightline(0,'v','b-');
+    axis([-stimdeg stimdeg -stimdeg stimdeg]);
+    title(roipoolnames{ri});
+    figurewrite(sprintf('centers_rpi%d_si%d_ri%d',rpi,si,ri),[],-1,sprintf('~/inout/%s/',char(64+final)));
+
+    % circles, random-subset (edge weighted by R2)
+    nplot = 100;
+    figureprep([100 100 500 500]); hold on;
+    axis([-stimdeg stimdeg -stimdeg stimdeg]);
+    if hardfilter
+      ii = find(R2 >= hardcut);
+      [d,ii2] = picksubset(ii,nplot,sum(100*clock));
+      ii = ii(sort(ii2));
+      for qq=1:length(ii)
+        h = drawellipse(x(ii(qq)),y(ii(qq)),0,2*sz(ii(qq)),2*sz(ii(qq)),[],[],{'k'});
+        edgec = 0;
+        set(h,'EdgeAlpha',1,'EdgeColor',repmat(edgec,[1 3]),'LineWidth',1,'FaceAlpha',0,'FaceColor',[1 0 0]);
+      end
+    else
+      [d,ii] = sort(R2,'ascend');
+      ii = ii(isfinite(R2(ii)));
+      [d,ii2] = picksubset(ii,nplot,sum(100*clock));
+      ii = ii(sort(ii2));
+      for qq=1:length(ii)
+        h = drawellipse(x(ii(qq)),y(ii(qq)),0,2*sz(ii(qq)),2*sz(ii(qq)),[],[],{'k'});
+        edgec = 1-(R2(ii(qq))/100);
+        set(h,'EdgeAlpha',1,'EdgeColor',repmat(edgec,[1 3]),'LineWidth',1,'FaceAlpha',0,'FaceColor',[1 0 0]);
+      end
+    end
+    set(drawrectangle(0,0,stimdeg,stimdeg,'r-'),'LineWidth',2);
+    straightline(0,'h','b-');
+    straightline(0,'v','b-');
+    axis([-stimdeg stimdeg -stimdeg stimdeg]);
+    title(roipoolnames{ri});
+    figurewrite(sprintf('circles_rpi%d_si%d_ri%d',rpi,si,ri),[],-1,sprintf('~/inout/%s/',char(64+final)));
+    
+    % density, r2filter
+    r2cutoffs = [-Inf 25 50 75];
+    for ci=1:length(r2cutoffs)
+
+
+
+
+
+% precompute, construct grid
+xx = linspace(-stimdeg,stimdeg,502);
+xx = xx(1:end-1) + (xx(2)-xx(1))/2;
+[xx,yy] = meshgrid(xx,xx);
+yy = flipud(yy);
+
+      % construct density image
+      ii = find(R2 > r2cutoffs(ci));
+      im = 0;
+      for qq=1:length(ii)  % voxel (prf)
+        im = im + (sqrt((xx - x(ii(qq))).^2 + (yy - y(ii(qq))).^2) <= 2*sz(ii(qq)));
+      end
+      im = im / length(ii);  % units are relative frequency
+      allims(:,:,ri,ci) = im;
+
+
+
+
+%       if ci==3  % HACK!!
+%         nboot = 100;
+%         for bbb=1:nboot
+%           ii0 = ii(ceil(length(ii)*rand(1,length(ii))));
+%           im = 0;
+%           for qq=1:length(ii0)
+%             im = im + (sqrt((xx - x(ii0(qq))).^2 + (yy - y(ii0(qq))).^2) <= 2*sz(ii0(qq)));
+%           end
+%           im = im / length(ii0);  % units are relative frequency
+%           allimsBOOT(:,:,ri,ci,bbb) = im;
+%         end
+%       end
+
+      % make figure
+      figureprep([100 100 500 500]); hold on;
+      axis([-stimdeg stimdeg -stimdeg stimdeg]);
+      mx = max(im(:));
+% %%% ALT:
+%       mx = 1;
+      h = imagesc(im,[0 mx]);
+      set(h,'XData',xx(1,[1 end]),'YData',yy([1 end],1)');
+      colormap(gray(256));
+      set(drawrectangle(0,0,stimdeg,stimdeg,'r-'),'LineWidth',2);
+      straightline(0,'h','b-');
+      straightline(0,'v','b-');
+      axis([-stimdeg stimdeg -stimdeg stimdeg]);
+      title(sprintf('%s, cutoff %d, max %.4f',roipoolnames{ri},r2cutoffs(ci),mx));
+      figurewrite(sprintf('density_rpi%d_si%d_ri%d_ci%d',rpi,si,ri,ci),[],-1,sprintf('~/inout/%s/',char(64+final)));
+
+    end
+  end
+  
+  for oi=1:2
+    r2ci = 3;  % this is R2=50% cutoff
+    figureprep([100 100 600 300]); hold all;
+    cmap = jet(length(roipools)/2);
+    set(gca,'ColorOrder',cmap);
+%     temp = allimsBOOT((end+1)/2,:,(oi-1)+(1:2:end),r2ci,:);
+%     pps = prctile(temp,[16 50 84],5);
+%     for vv=1:size(temp,3)
+%       errorbar3(xx(1,:),pps(1,:,vv,1,2),squish(pps(1,:,vv,1,[1 3]),4)','v',1/3*cmap(vv,:)+2/3*[1 1 1]);
+%     end
+%     h = plot(xx(1,:),squish(pps(1,:,:,1,2),2));
+    h = plot(xx(1,:),squish(allims((end+1)/2,:,(oi-1)+(1:2:end),r2ci),2));
+    legend(h,roipoolnames((oi-1)+(1:2:end)),'Location','EastOutside');
+    ax = axis; axis([-stimdeg stimdeg 0 1]);
+    straightline(0,'v','b-');
+    set(straightline([-stimdeg/2 stimdeg/2],'v','r-'),'LineWidth',2);
+    xlabel('X-position (deg)');
+    ylabel('Coverage fraction');
+    figurewrite(sprintf('profile_rpi%d_si%d_oi%d',rpi,si,oi),[],-1,sprintf('~/inout/%s/',char(64+final)));
+  end
+  
+end
+
+%%%%%% NOTES
+
+- ALT: was temporary for just si=4 for the full grayscale range.
+- 50% scale for the images.
+- fix the stupid square (upper left not joined)
+- they weren't exactly square. fix it.
+- circles figure: 50% 1 pt for square; green 0.5 pt for lines; circles change to 0.5pt
+- for figuresalt2, re-run (but without density and profile plots)
+- for figuresalt3, re-run just to figure out mx
+
+- for FINAL.PARAMETERSprofile, 75% overall scale to bring things down
+
+- FOR MAKING THE OTHERHEMI VERSION:
+  - remember to fix aspect ratio
+  - alt3: for mx
+     open density*si4*ci3*.png
+  - alt2: for hard threshold i think
+  - figures (regular): for imagesc (open density*si4*ci3*.eps)
