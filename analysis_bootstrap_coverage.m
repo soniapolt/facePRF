@@ -12,17 +12,19 @@ expt = 'fixPRF';
 minR2 = 'r2-20';%['perc-50'];%20;          % cutoff for vox selection
 ROIs= standardROIs;
 plotIndivs = 1;
-computeCoverage = 0;
-contour = 0; % plot image or contour
+computeCoverage = 1;
+contour = 0;    % plot image or contour
+   
 
-whichStim = 'outline';
+whichStim = 'internal';%'outline';%
 whichModel = 'kayCSS';
 plotCent = 1; % weighted centroid of each image
-hems = {'rh' 'lh'};
+hems = {'lh' 'rh'};
 
 boot.iters = 1000;
 boot.vox = 0.8; % now implements this as a proportion of total voxels, not an absolute number
-boot.method = 'max';% 'max';%% 'mean' or 'max'
+boot.method = 'binary';% 'max';%% 'mean' or 'max' or 'binary'
+boot.szMult = 2; % if binary, factor by which size is multiplied at == diameter. pre 5/4/20 this was 1 (becuase 2xsize was set in readPRFs.m), 2 matches kk and df and is appropriate for all summer-2020+-generated pRFsets
 boot.scaleSubjs = 0; % rescale each individual's coverage to [0 1]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,7 +40,8 @@ subjNum = cellNum(subjs,info.subjs);
 exptDir = fullfile(raid,'invPRF',expt);
 covPath = [exptDir '/coverage/']; checkDir(covPath);
 
-bootOpts = [boot.method '_iters' num2str(boot.iters) '_vox' num2str(boot.vox) '_scale' num2str(boot.scaleSubjs) '.mat'];
+if boot.szMult == 2 multText = ''; else multText = ['_mult' num2str(boot.szMult)]; end
+bootOpts = [boot.method '_iters' num2str(boot.iters) '_vox' num2str(boot.vox) '_scale' num2str(boot.scaleSubjs) multText '.mat'];
 
 
 tic
@@ -53,7 +56,7 @@ if ~exist(grpCov) || computeCoverage
                 for c = 1:2
                     if ~isempty(subj(s).roi(r).fits(c).vox) % if this subject has this ROI
                         %%% MAIN BOOTSTRAPPING STEP
-                        sBoot.roi(r).cond(c) = bootCoverage(subj(s).roi(r).fits(c).vox,boot.method,boot.iters,boot.vox,boot.scaleSubjs);
+                        sBoot.roi(r).cond(c) = bootCoverage(subj(s).roi(r).fits(c).vox,boot.method,boot.iters,boot.vox,boot.scaleSubjs,boot.szMult);
                         
                         % centroid of FWHM
                         [boot.roi(r).cond(c).centX,boot.roi(r).cond(c).centY] = FWHMcentroid(sBoot.roi(r).cond(c).covIm);
@@ -99,14 +102,14 @@ for r = ROInum
     
     for c = 1:length(boot.roi(1).cond)
         subplot(1,2,abs(c-3));
-        switch boot.method
-            case 'mean'
-                meanIm = squeeze(nanmean(boot.roi(r).cond(c).cov));
-            case 'max' % additionally, threshold across participants
-                meanIm = squeeze(nanmean(boot.roi(r).cond(c).cov));
-                meanIm(find(meanIm<.5)) = 0;
+        % take overall coverage image
+         meanIm = squeeze(nanmean(boot.roi(r).cond(c).cov));
+         
+        if strcmp(boot.method,'max')
+            meanIm(find(meanIm<.5)) = 0;
                 %meanIm = imgaussfilt(meanIm,boot.ppd/10);
         end
+
         if contour plotCovContour(meanIm,boot.res,boot.ppd,1); else
             plotCovIm(meanIm,boot.res,boot.ppd,1,plotCent); end
         x = xlabel({'Mean FWHM:';sprintf('%.2f dva',mean(boot.roi(r).cond(c).area));...
@@ -117,6 +120,6 @@ for r = ROInum
         set(t,'visible','on');if H set(t,'Color',[0 .5 0]); end
     end
     superTitle(fileName(grpCov),14,.05);
-    %niceSave([raid 'invPRF/figures/fixPRF/coverage/bootstrap/'],[ROIs{r} '_' fileName(grpCov)],[],[],{'svg'});
+    niceSave([raid 'invPRF/figures/fixPRF/coverage/bootstrap/'],[ROIs{r} '_' fileName(grpCov)],[],[],{'svg' 'png'});
 end
 if onLaptop playSound; end

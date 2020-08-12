@@ -8,17 +8,17 @@ info.task = '';
 info.expt = 'fixPRF';%'nhp';%
 info.setNotes = '.1 min size + 10.9 max size (nov 2019)';
 
-info.whichCutoff ='perc';%'perc';%  % 'perc' or 'r2'
-info.cutoffVal = 50;      % cutoff for vox selection - either minR2 or percentile
+info.whichCutoff ='r2';%'perc';%  % 'perc' or 'r2'
+info.cutoffVal = 20;      % cutoff for vox selection - either minR2 or percentile
 info.whichPerc = 'min';   % min or mean
 
 if ~strcmp(info.whichCutoff,'perc') info.whichPerc = []; end
 
 info.ROIs= standardROIs;%{'V1' 'hV4' 'mFus_faces'};%{'PL' 'ML'};%
 
-info.whichStim ='outline';%'photo';%'internal';%'edge';%';% edge'%'
+info.whichStim = 'outline';%'internal';%'photo';%'internal';%'edge';%';% edge'%'
 info.whichModel ='kayCSS';%'inflipCSSn';%'intempCSSn';%'cssExpN';%'kayCSS';% .  %'cssShift';%
-info.hems = {'lh'};% now will automatically also save rh- and lh- versions of the file
+info.hems = {'lh' 'rh'};% now will automatically also save rh- and lh- versions of the file
 info.fitSuffix = ''; %'_orig';%
 
 saveFits = 1;

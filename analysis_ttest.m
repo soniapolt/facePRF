@@ -4,8 +4,8 @@ clear all; close all;
 
 subjs = prfSubjs;%{'TH' 'DF' 'EM' 'JG' 'MG' 'SP'};
 expt = 'fixPRF';
-tests = {'Ydeg' 'Xdeg' 'eccen' 'gain' 'size'}; % can be parname (Y,X,sd,gain,exp,shift) or pRF.read value (r2,size,eccen,gain)
-whichM = 'median'; % mean or median
+tests = {'Ydeg' 'Xdeg' 'eccen' 'gain' 'size' 'r2'}; % can be parname (Y,X,sd,gain,exp,shift) or pRF.read value (r2,size,eccen,gain)
+whichM = 'mean'; % mean or median
 
 
 r2cutoff = 'r2-20';%'perc-50';%          % cutoff for vox selection
@@ -15,7 +15,7 @@ fitSuffix = '';
 
 whichStim = 'outline';%'eyes';%
 whichModel = 'kayCSS';
-hems = {'rh'};
+hems = {'rh' 'lh'};
 txtName = [hemText(hems) '_' r2cutoff];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % load data                            %
@@ -25,7 +25,7 @@ load(pRFfile(dirOf(pwd),expt,r2cutoff,whichStim,whichModel,hems,fitSuffix));
 ROInum = cellNum(ROIs,info.ROIs);
 subjNum = cellNum(subjs,info.subjs);
 checkDir([dirOf(pwd) 'stats/' expt '/ttests']);
-    fid = fopen([dirOf(pwd) 'stats/' expt '/ttests/ttests_' txtName '_' whichModel '_' whichStim '.txt'],'w+');
+    fid = fopen([dirOf(pwd) 'stats/' expt '/ttests/ttests_' whichM '_' txtName '_' whichModel '_' whichStim '.txt'],'w+');
     
     
 comps = nchoosek(1:length(roi(1).fits),2);
@@ -76,7 +76,7 @@ for t = 1:length(tests)
             
             comp(c).groupData{r} = sData;
             [H,P,CI,STATS] = ttest(sData(:,1),sData(:,2));
-            comp(c).diff = mean(sData(:,2))-mean(sData(:,1));
+            comp(c).diff = mean(sData(:,2)-sData(:,1));
             comp(c).se = std(sData(:,2)-sData(:,1))/sqrt(length(sData));
             if strcmp(test,'X') || strcmp(test,'Y')
                 comp(c).diff = comp(c).diff /roi(1).fits(1).ppd;

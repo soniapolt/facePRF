@@ -5,13 +5,15 @@ clear all; close all;
 subjs =prfSubjs;
 expt = 'fixPRF';
 tests = {'Y' 'X' 'eccen' 'size' 'gain' 'r2'}; % can be parname (Y,X,sd,gain,exp,shift) or pRF.read value (r2,size,eccen,gain)
-whichM = 'median'; % mean or median
+whichM = 'mean'; % mean or median
 
-r2cutoff ='perc-50';%'r2-50';%   %    %or 'r2-20'    % cutoff for vox selection
-ROIs= standardROIs('face');%{'V1' 'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};
+r2cutoff = 'r2-20'; %'perc-50';%'r2-50';%   %    %or 'r2-20'    % cutoff for vox selection
+whichANOVA = 'EVC'; % 'EVC' or 'face';
+
+ROIs= standardROIs(whichANOVA);%{'V1' 'hV4' 'IOG_faces' 'pFus_faces' 'mFus_faces'};
 fitSuffix = '';
 
-txtName = ['face-' r2cutoff];
+txtName = [whichANOVA '-' r2cutoff];
 
 whichStim = 'outline';
 whichModel = 'kayCSS';
@@ -23,7 +25,9 @@ factNames = {'hem' 'ROI' 'condition'};
 % load data                            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
 hem = struct;
+
 for h = 1:length(hems)
     pF = pRFfile(dirOf(pwd),expt,r2cutoff,whichStim,whichModel,{hems{h}},fitSuffix);
     load(pF); fprintf('%s\n...',pF);
@@ -42,7 +46,7 @@ parNames = roi(1).fits(1).parNames;
 % data formatting for: RMAOV33.m
 % each row = [data fact1# fact2# fact3# subj#];
 checkDir([dirOf(pwd) '/stats/' expt '/anova3/']);
-    fid = fopen([dirOf(pwd) '/stats/' expt '/anova3/ANOVA3_' txtName '_' whichModel '_' whichStim '.txt'],'w+');
+    fid = fopen([dirOf(pwd) '/stats/' expt '/anova3/ANOVA3_' txtName '_' whichModel '_' whichStim '_' whichM '.txt'],'w+');
 fprintf(fid,'\n**************\n%s, %s\n**************\n',whichM, strTogether(ROIs));
 fprintf(fid,'pRF file: %s\n',pF);
 
@@ -82,41 +86,11 @@ for t = 1:length(tests)
     end
     
     % check for missing data and remove those subjects from the comparison
-    if ~isempty(rmSubjs) for s = unique(rmSubjs)
-        anovaData(find(anovaData(:,end)==s),:) = []; 
-    fprintf('Removed data from subj %s...\n',subjs{subjNum(s)}); end
-    %anovaData(:,end) = repmat([1:length(subjs)-length(unique(rmSubjs))],1,r*h*c);
-    end
-    % RMAOV33(anovaData,.05,factNames);
-    
+    [anovaData] = anova_rmSubjs(anovaData,rmSubjs);
+    % run anova
     result = rmAnova3(anovaData,factNames,0);
+    %print output
+    anova3_text(fid,result,test)
     
-    % quick ANOVA summary
-    
-    fprintf('\n-----\n%s:\n-----\n',test);
-    fprintf(fid,'\n-----\n%s:\n-----\n',test);
-    
-    main.s = []; main.ns = []; int.s = []; int.ns=[];
-    for n = 1:length(result)
-        
-            text = sprintf('%s, F(%d,%d)=%.2f, p=%.3f.\n',result(n).name,result(n).df(1),result(n).df(2),result(n).F,result(n).p);
-        if strcmp(result(n).type,'main')
-            if result(n).h
-        main.s = [main.s text];
-        else
-        main.ns = [main.ns text];end
-        else
-        if result(n).h
-        int.s = [int.s text];else
-       	int.ns = [int.ns text];end    
-        end  
-    end
-    fprintf(fid,'Significant Main Effects: \n%s\n',main.s);
-    fprintf(fid,'Significant Interactions: \n%s\n',int.s);
-    fprintf(fid,'N.S: \n%s%s\n',main.ns,int.ns);
-    
-    fprintf('Significant Main Effects: \n%s\n',main.s);
-    fprintf('Significant Interactions: \n%s\n',int.s);
-    fprintf('N.S: \n%s%s\n',main.ns,int.ns);
 end
 fclose(fid);

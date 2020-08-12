@@ -8,10 +8,11 @@ clear all; close all;
 
 expt = 'fixPRF'; % assumes all subject in pRFset
 minR2 = ['r2-20'];          % cutoff for vox selection
-ROIs = {'IOG_faces' 'pFus_faces' 'mFus_faces' 'pSTS_faces'}; % if more than one ROI, combine voxel positions for them
+ROIs = {'mFus_faces'};%{'IOG_faces' 'pFus_faces' 'V1' 'pSTS_faces'}; %{'IOG_faces' 'pFus_faces' 'mFus_faces' 'pSTS_faces'}; % if more than one ROI, combine voxel positions for them
 
-whichStim = 'outline';%'photo';%'internal';%
+whichStim = 'outline';%'internal';%'photo';%
 whichModel = 'kayCSS';%'cssShift';%
+suffix= '';
 hems = {'rh' 'lh'};
 recomp = 1;
 
@@ -33,7 +34,7 @@ vis.res = roi(1).fits(1).res+vis.ppd; % give a little buffer around our image/ma
 [XX,YY]=meshgrid(-vis.res/2:vis.res/2);
 checkDir([raid 'invPRF/fixPRF/pRFims/']);
 
-
+if containsTxt(suffix,'half') mult = .5; else mult = 1; end
 
 for rr = 1:length(ROIs)
     
@@ -41,7 +42,7 @@ for rr = 1:length(ROIs)
     tic
     r = cellNum(ROIs{rr},info.ROIs);
     for c = 1:length(roi(1).fits)
-        imFile = [raid 'invPRF/fixPRF/prfIms/' ROIs{rr} '_' fileName(pRFset) '_cond' num2str(c) '.mat'];
+        imFile = [raid 'invPRF/fixPRF/prfIms/' ROIs{rr} '_' fileName(pRFset) '_cond' num2str(c) suffix '.mat'];
         if ~exist(imFile) || recomp
             cPRFs = []; vis.subjInd = [];
             for s = 1:length(info.subjs)
@@ -50,7 +51,7 @@ for rr = 1:length(ROIs)
                 %tic
                 parfor v = 1:length(subj(s).roi(r).fits(c).vox)
                     sPRFs(v,:,:) = PRF(XX,YY,subj(s).roi(r).fits(c).vox(v).XYdeg(1)*vis.ppd,...
-                        subj(s).roi(r).fits(c).vox(v).XYdeg(2)*vis.ppd,subj(s).roi(r).fits(c).vox(v).size*vis.ppd);
+                        subj(s).roi(r).fits(c).vox(v).XYdeg(2)*vis.ppd,subj(s).roi(r).fits(c).vox(v).size*vis.ppd*mult);
                 end
                 %toc
                 cPRFs = [cPRFs; sPRFs];
