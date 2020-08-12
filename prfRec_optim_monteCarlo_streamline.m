@@ -8,19 +8,22 @@ clear all; close all;
 
 expt = 'fixPRF'; % assumes all subject in pRFset
 minR2 = ['r2-20'];          % cutoff for vox selection
-ROIs = {'pSTS_faces'}; % if more than one ROI, combine voxel positions for them
+ROIs = {'mFus_faces'}; % if more than one ROI, combine voxel positions for them
 
-whichStim = 'outline';%'photo';%'internal';%
+whichStim ='outline';% 'internal';%'photo';%
+whichLoc = 'outline'; % outline or internal
 whichModel = 'kayCSS';%'cssShift';%
 hems = {'rh' 'lh'};
 recomp = 1;
 
 sim.numSims = 1000;%50;
 sim.drawVox = .8; % now a proportion, vs. absolute number
+sim.suffix =  ''; % now can call halfSize correction; leave blank for newer pRFsets
 
 for r = 1:length(ROIs)
-    sim.name = [raid 'invPRF/fixPRF/behavSim/' ROIs{r} '_' minR2 '_' num2str(sim.drawVox) 'vox'];
-    for c = 1
+    sim.name = [raid 'invPRF/fixPRF/behavSim/' whichStim '_' ROIs{r} '_' minR2 '_' num2str(sim.drawVox) 'vox' sim.suffix];
+    if ~strcmp(whichLoc,'internal') sim.name = [sim.name '_' whichLoc]; end
+    for c = 1:2
         if ~exist([sim.name '_cond' num2str(c) '.mat']) || recomp
             fprintf(['Starting ' [sim.name '_cond' num2str(c)] '.mat: %s...\n'],datestr(now)); tic;
             sim.subj = [];
@@ -32,7 +35,7 @@ for r = 1:length(ROIs)
             % load coverage maps                   %
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             try
-                imFile = [raid 'invPRF/fixPRF/prfIms/' ROIs{r} '_' fileName(pRFfile('',expt,minR2,whichStim,whichModel,hems)) '_cond' num2str(c) '.mat'];
+                imFile = [raid 'invPRF/fixPRF/prfIms/' ROIs{r} '_' fileName(pRFfile('',expt,minR2,whichStim,whichModel,hems)) '_cond' num2str(c) sim.suffix '.mat'];
                 load(imFile)
             catch
                 error(sprintf('Missing %s! Check filepath or run analysis_makePRFIms.m\n',imFile)); end
@@ -53,7 +56,7 @@ for r = 1:length(ROIs)
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % internal features images             %
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            if r == 1 load('internalAvg.mat');
+            if r == 1 load([whichLoc 'Avg.mat']);
                 faceSize = sim.faceSize*sim.ppd;
                 face = imresize(avgFace,[faceSize faceSize]);
                 if c == 1 face = flipud(face); end
