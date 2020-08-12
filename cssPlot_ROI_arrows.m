@@ -6,14 +6,14 @@ subjs = prfSubjs;%{'SP' 'DF' 'EM' 'TH' 'MG' 'JG'};%{'george'};%;
 expt = 'fixPRF';%'nhp';%'
 
 minR2 = 'r2-50';%'perc-50';          % cutoff for vox selection
-ROIs= ['V1' standardROIs('face')];%standardROIs;%['hV4' standardROIs('face')]; %{'ML' 'PL'};%{};%('face')
+ROIs= {'V1'};% standardROIs('face')];%standardROIs;%['hV4' standardROIs('face')]; %{'ML' 'PL'};%{};%('face')
 % manual set of baseCond + compConds
 % [baseCond, compCond], more flexibly defined
 base = 2; comp = 1;
 
 saveFig = 1;
 
-sampleVox = 150; % number of voxels to grab for plotting
+sampleVox = 2000; % number of voxels to grab for plotting
 
 whichStim = 'outline';%'edge';%'binary';%'internal';%
 whichModel = 'kayCSS';%'inflipCSSn';%'kayCSS';%'tempCSSn';%'%cssShift';%

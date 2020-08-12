@@ -28,8 +28,8 @@ hems = {'lh' 'rh'};%{''};%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plotBasics = 1;
 %plotBaselines = 0;
-plotXY =1;
-plotSize = 1;
+plotXY =0;
+plotSize = 0;
 
 fontSize = 12; titleSize = 14;
 
@@ -74,7 +74,7 @@ else bFits =roi(ROInum(r)).fits; end
         % 1) coverage, baseCond
         subplot(numPlots(1),numPlots(2),pl)
         % plotCoverage(vox,color,leg,ppd,res,plotSize,alphaGain,sampleVox,centerMass,plotCirc)
-        plotCoverage(bFits(base).vox,condColors(base),bFits(base).cond,roi(1).fits(1).ppd,roi(1).fits(1).res,0);
+        plotCoverage(bFits(base).vox,roiColors(ROIs{r}),bFits(base).cond,roi(1).fits(1).ppd,roi(1).fits(1).res,0);
         pl = pl+1;
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -82,9 +82,9 @@ else bFits =roi(ROInum(r)).fits; end
         subplot(numPlots(1),numPlots(2),pl)
         
         for c = 1:length(bFits)
-            s(c) = scatter([bFits(c).vox.eccen],[bFits(c).vox.size],30,condColors(c)); hold on;
+            s(c) = scatter([bFits(c).vox.eccen],[bFits(c).vox.size],5,roiColors(ROIs{r})*(c*.5),'filled'); hold on;
         end
-        l=lsline; l=fliplr(l); for c = 1:length(bFits) set(l(c),'Color', condColors(c),'LineWidth',2); end
+        l=lsline; l=fliplr(l); for c = 1:length(bFits) set(l(c),'Color', roiColors(ROIs{r})*(c*.5),'LineWidth',2); end
         
         xlabel('Eccen (dva)','FontSize',fontSize); ylabel(['Size (2*SD/sqrt(N)) (dva)'],'FontSize',fontSize); title('Size by Eccentricity','fontSize',titleSize);%ylim([0 2.5]);
         axis square; g = legend([s(1:length(bFits))],{bFits.cond}); set(g,'box','off','FontSize',fontSize,'location','best');
@@ -111,17 +111,17 @@ else bFits =roi(ROInum(r)).fits; end
         
         for cc = 1:size(comps,1)
             baseCond = comps(cc,1);
-            c = comps(cc,2);
+            c = comps(cc,2)
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % col 1) coverage
             subplot(numPlots(1),numPlots(2),pl)
-            plotCoverage(bFits(c).vox,condColors(c),bFits(c).cond,roi(1).fits(1).ppd,roi(1).fits(1).res,0);
+            plotCoverage(bFits(c).vox,roiColors(ROIs{r})*.5,bFits(c).cond,roi(1).fits(1).ppd,roi(1).fits(1).res,0);
             pl = pl+1;
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % col 4) eccen vs basecond
             subplot(numPlots(1),numPlots(2),pl)
-            scatterCent([bFits(baseCond).vox.eccen],[bFits(c).vox.eccen],condColors(c),...
+            scatterCent([bFits(baseCond).vox.eccen],[bFits(c).vox.eccen],roiColors(ROIs{r})*(c*.5),...
                 bFits(baseCond).cond,bFits(c).cond,'Eccen (dva)',fontSize,1,1);
             pl = pl+1;
             
@@ -129,14 +129,14 @@ else bFits =roi(ROInum(r)).fits; end
             % col 3) size vs basecond
             subplot(numPlots(1),numPlots(2),pl)
             
-            scatterCent([bFits(baseCond).vox.size],[bFits(c).vox.size],condColors(c),...
+            scatterCent([bFits(baseCond).vox.size],[bFits(c).vox.size],roiColors(ROIs{r})*(c*.5),...
                 bFits(baseCond).cond,bFits(c).cond,'Size (2*SD/sqrt(N)) (dva)',fontSize,1,1);
             pl = pl+1;
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % col 5) r2 vs basecond
             subplot(numPlots(1),numPlots(2),pl)
-            scatterCent([bFits(baseCond).vox.r2],[bFits(c).vox.r2],condColors(c),...
+            scatterCent([bFits(baseCond).vox.r2],[bFits(c).vox.r2],roiColors(ROIs{r})*(c*.5),...
                 bFits(baseCond).cond,bFits(c).cond,'R^{2}',fontSize,1,1);
             pl = pl+1;
         end
@@ -144,8 +144,8 @@ else bFits =roi(ROInum(r)).fits; end
         
         superTitle(titleText,titleSize,.05);
         if saveFig 
-        txt = [hemText(hems) '_' whichModel  '_' whichStim '_basics'];
-        niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],subjs); % just save pngs, since these can be generated pretty quickly
+        txt = [hemText(hems) '_' whichModel  '_' whichStim '_' minR2 '_basics'];
+        niceSave([dirOf(pwd) 'figures/' expt '/ROIplots/' ROIs{r}  '/'],txt,[],[],{'png' 'svg'}); % just save pngs, since these can be generated pretty quickly
         end
         
         %     for c = 1:2
@@ -189,7 +189,7 @@ else bFits =roi(ROInum(r)).fits; end
             baseCond = comps(cc,1);
             c = comps(cc,2);
             subplot(numPlots(1),numPlots(2),1+cc)
-            scatterCent([bFits(baseCond).vox.baseline],[bFits(c).vox.baseline],condColors(c),...
+            scatterCent([bFits(baseCond).vox.baseline],[bFits(c).vox.baseline],roiColors(ROIs{r})*mult,...
                 bFits(baseCond).cond,bFits(c).cond,'Baselines (no outlier trim)',fontSize,1,1);
         end
         

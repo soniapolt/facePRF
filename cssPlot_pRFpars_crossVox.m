@@ -9,14 +9,14 @@ saveFig =1;
 convertDVA = 1;
 
 minR2 = 'r2-20';%['perc-50'];          % cutoff for vox selection
-ROIs= {'mFus_faces'};%standardROIs;%('face+')
+ROIs= ['V1' standardROIs('face')];%{'mFus_faces'};%standardROIs;%('face+')
 
 whichStim = 'outline';%'photo';%'eyes';%'internal';%
 whichModel = 'kayCSS';%'flipCSSn';%'cssExpN';%'cssShift';%
 whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
-plotPars = {'gain' 'r2' 'Y' 'X' 'size' };%{'Y'};%
-parTitles = { 'Gain Estim' 'Estimated R^{2}' 'Y Estim.' 'X Estim.' 'Size [2xSD/sqrt(N)] (dva)'};%{'Y estim'};%
-plotType = {'box' 'scatter' 'distr' 'distr' 'scatter' };%{'distr'};% % 1 = boxplot, 2 = distr, 3 = scatter
+plotPars = {'r2'};%{'Y' 'size'};%{'gain' 'r2' 'Y' 'X' 'size' };%{'Y'};%
+parTitles = {'Estimated R^{2}'};%{'Y' 'size [sigma/sqrt(N)] (dva)'}%{ 'Gain Estim' 'Estimated R^{2}' 'Y Estim.' 'X Estim.' 'Size [2xSD/sqrt(N)] (dva)'};%{'Y estim'};%
+plotType = {'scatter' 'scatter'};%{'box' 'scatter' 'distr' 'distr' 'scatter' };%{'distr'};% % 1 = boxplot, 2 = distr, 3 = scatter
 
 hems = {'rh' 'lh'};
 fitSuffix = '';%'_orig';%
@@ -45,9 +45,9 @@ titleText = [whichModel ' ' parTitles{p} ', Subj: '];
 titleText = [titleText strTogether(subjs) ' (voxels R^2 > ' num2str(minR2) '), ' whichStim ' stim, ' whichModel ' model'];
  
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if saveFig && onLaptop figSize = [0 0 1 1]; else figSize = [.2 .1 8 .8]; end
+    if saveFig && onLaptop figSize = [0.1 0.1 .6 .4]; else figSize = [.2 .1 8 .8]; end
     niceFig(figSize,fontSize,1);
-    numPlots = [2 ceil(length(ROIs)/2)];pl = 1;
+    numPlots = [1 ceil(length(ROIs)/1)];pl = 1;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for r = 1:length(ROIs)
@@ -57,6 +57,9 @@ titleText = [titleText strTogether(subjs) ' (voxels R^2 > ' num2str(minR2) '), '
     for c = 1:length(roi(1).fits)
         
         cPars{c} = getPar(plotPars{p},fits(c),1);
+        if containsTxt(plotPars{p},'size')
+                cPars{c}= cPars{c}./2;    
+                end
 %         parNum = cellNum(plotPars{p},fits(1).parNames);
 %             if ~isempty(parNum)
 %                 pars = vertcat(fits(c).vox.params);
@@ -101,10 +104,11 @@ titleText = [titleText strTogether(subjs) ' (voxels R^2 > ' num2str(minR2) '), '
                      ROIs{r}, plotPars{p},pv,od);
             case 'scatter'
                 hold on;
-                scatterCent(cPars{1},cPars{2},condColors(c),...
+                colors = {roiColors(ROIs{r}); roiColors(ROIs{r})*.5};
+                scatterCent2(cPars{1},cPars{2},colors,...
                     fits(1).cond,fits(2).cond,[],fontSize,0,1);
                 %hold on; l =lsline; l=fliplr(l);
-                if strcmp(plotPars{p},'r2') xlim([0 100]); ylim([0 100]); end
+                if strcmp(plotPars{p},'r2') xlim([20 100]); ylim([20 100]); end
                 hold on; xl = get(gca,'xlim');
                 hold on; plot(xl,xl,'k:');
         end
@@ -120,12 +124,12 @@ titleText = [titleText strTogether(subjs) ' (voxels R^2 > ' num2str(minR2) '), '
 
 if saveFig == 1
     if length(subjs) == 1 txt = ['subj' subjs{1}]; else txt = ['groupN' num2str(length(subjs))]; end
-    txt = [roi(1).fits(1).parNames{p} '_' txt ];
+    txt = [plotPars{p} '_' txt ];
     
     if length(hems) == 1
         txt = [txt '_' hems{1}]; end
-        txt = ['fixedE_' whichModel '_' whichStim '_' txt];
-    niceSave([dirOf(pwd) 'figures/' expt '/params/'],txt,[],[],{'svg'}); % just save pngs, since these can be generated pretty quickly
+        txt = [plotType{p} '_' whichModel '_' whichStim '_' txt];
+    niceSave([dirOf(pwd) 'figures/' expt '/crossVox/'],txt,[],[],{'png' 'svg'}); % just save pngs, since these can be generated pretty quickly
 end
 end
 if onLaptop playSound; end

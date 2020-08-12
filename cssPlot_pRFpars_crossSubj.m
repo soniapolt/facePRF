@@ -1,4 +1,5 @@
 % loads & plots distributions of XY changes/anything else per each subject
+% not used in manuscript figures
 
 clear all; close all;
 
@@ -7,17 +8,18 @@ expt = 'fixPRF';
 
 saveFig =1;
 convertDVA = 1;
+flipX = 1;
 
 minR2 = 'r2-20';          % cutoff for vox selection
-ROIs= ['V1' standardROIs('face')]
+ROIs= ['V1' standardROIs('face')];%{'mFus_faces'};%
 
 whichStim = 'outline';%'photo';%'internal';%'eyes';%
 whichModel = 'kayCSS';%'inflipCSSn';%'flipCSSn';%'cssExpN';%'cssShift';%
 whichM = 3; % 1 = mean, 2 = mode/peak, 3 = median
 mS = {'mean' 'mode' 'median'};
-plotPars = {'Y'}%{'gain' 'r2' 'Y' 'X' 'size'};
-parTitles = {'Y Estim.'};%{'Gain Estim' 'Estimated R^{2}' 'Y Estim.' 'X Estim.' 'Size [2xSD/sqrt(N)] (dva)'};
-plotType = {'distr'};%{'box' 'distr' 'distr' 'distr' 'box'}; % bars, distr, or delta
+plotPars = {'Y'};%{'size' 'X' 'Y' 'gain'};%{'gain' 'r2' 'Y' 'X' };
+parTitles = {'Y Estim'};%{'Size [Sigma/sqrt(N)] (dva)' 'X Estim.' 'Y Estim.' 'Gain Estim'};%{'Gain Estim' 'Estimated R^{2}' 'Y Estim.' 'X Estim.' 'Size [Sigma/sqrt(N)] (dva)'};
+plotType = {'colorbar'};%{'box' 'box' 'box' 'box'};%{'box' 'distr' 'distr' 'distr' 'box'}; % bars, distr, or delta
 
 hems = {'lh' 'rh'};
 fitSuffix = '';%'_orig';%
@@ -53,22 +55,28 @@ for p = 1:length(plotPars)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for r = 1:length(ROIs)
         
-        subplot(numPlots(1),numPlots(2),pl)
         
+
         sPars = []; mPars = [];
         for c = 1:length(roi(1).fits)
             for s = 1:length(subjNum)
                 fits = subj(subjNum(s)).roi(ROInum(r)).fits(c);
                 try
-                cPars{c} = getPar(plotPars{p},fits,1);
+                cPars{c} = getPar(plotPars{p},fits,1,flipX);
                 catch cPars{c} = NaN; end % missing ROIs
                 
                 % aggregate across subjects
+                % correction for size def
+                if containsTxt(plotPars{p},'size')
+                cPars{c}= cPars{c}./2;    
+                end
                 sPars{s,c} = cPars{c}; % full distribution for this subject
+                
                 eval(['mPars(s,c) = nan' mS{whichM} '(cPars{c});']); % mean value for this subject
             end
         end
         hues = [1 .5];
+        
         switch plotType{p}
             case 'bars'
                 niceBars2(mPars,mS{whichM},1,{fits.cond},[roiColors(ROIs(r)).*hues(1); roiColors(ROIs(r)).*hues(2)]);
@@ -106,7 +114,11 @@ for p = 1:length(plotPars)
                     yl= ([0 5]);
                 else yl = [];
                 end
-                niceBoxplot(mPars,{fits(1).cond fits(2).cond},1,[roiColors(ROIs(r)).*hues(1); roiColors(ROIs(r)).*hues(2)],yl);
+                niceBoxplot(fliplr(mPars),fliplr({roi(1).fits(1).cond roi(1).fits(2).cond}),1,flipud([roiColors(ROIs(r)).*hues(1); roiColors(ROIs(r)).*hues(2)]),yl);
+            case 'colorbar'
+                
+                
+            
         end
         set(gca,'TickDir','out');
         pl = pl+1;
@@ -120,8 +132,8 @@ for p = 1:length(plotPars)
     
     if saveFig == 1
         if length(subjs) == 1 txt = ['subj' subjs{1}]; else txt = ['groupN' num2str(length(subjs))]; end
-        txt = [plotPars{p} '_' hemText(hems) '_' txt];
-        niceSave([dirOf(pwd) 'figures/' expt '/randomEffects/'],txt,[],[],{'png' 'svg'}); % just save pngs, since these can be generated pretty quickly
+        txt = [plotPars{p} '_' hemText(hems) '_' txt '_flipX' num2str(flipX)];
+        niceSave([dirOf(pwd) 'figures/' expt '/crossSubj/'],txt,[],[],{'png' 'svg'}); % just save pngs, since these can be generated pretty quickly
     end
 end
 if onLaptop playSound; end

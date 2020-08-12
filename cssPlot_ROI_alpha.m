@@ -10,7 +10,7 @@ subjs = prfSubjs;%{'SP' 'DF' 'EM' 'TH' 'MG' 'JG'};%{'george'};%;
 expt = 'fixPRF';%'nhp';%'
 
 minR2 = 'r2-20';%'perc-50';          % cutoff for vox selection
-ROIs= {'V1'};%{'mFus_faces'};%standardROIs;%['hV4' standardROIs('face')]; %{'ML' 'PL'};%{};%('face')
+ROIs= {'mFus_faces'};%{'V1'};%standardROIs;%['hV4' standardROIs('face')]; %{'ML' 'PL'};%{};%('face')
 % manual set of baseCond + compConds
 % [baseCond, compCond], more flexibly defined
 base = 2; comps = [2 1];
@@ -129,7 +129,7 @@ else bFits =roi(ROInum(r)).fits; end
             subplot(numPlots(1),numPlots(2),pl)
              hold on;
             % scatterCent(x,y,color,xlab,ylab,titleTx,fontSize,equalLims,line,alpha)
-            scatterCent([bFits(baseCond).vox.gain],[bFits(c).vox.gain],roiColors(ROIs{r})*(c*.5),...
+            scatterCent([bFits(baseCond).vox.gain],[bFits(c).vox.gain],black,...
                 bFits(baseCond).cond,bFits(c).cond,'Gain',fontSize,1,1,alpha);
             xlim([0 5]); ylim([0 5])
             set(gca,'TickDir','out');
@@ -139,7 +139,7 @@ else bFits =roi(ROInum(r)).fits; end
             % col 3) size vs basecond
             subplot(numPlots(1),numPlots(2),pl)
             
-            scatterCent([bFits(baseCond).vox.size],[bFits(c).vox.size],roiColors(ROIs{r})*(c*.5),...
+            scatterCent([bFits(baseCond).vox.size],[bFits(c).vox.size],black,...
                 bFits(baseCond).cond,bFits(c).cond,'Size (2*SD/sqrt(N)) (dva)',fontSize,1,1,alpha);
             set(gca,'TickDir','out');
             pl = pl+1;
@@ -147,7 +147,7 @@ else bFits =roi(ROInum(r)).fits; end
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % col 5) r2 vs basecond
             subplot(numPlots(1),numPlots(2),pl)
-            scatterCent([bFits(baseCond).vox.r2],[bFits(c).vox.r2],roiColors(ROIs{r})*(c*.5),...
+            scatterCent([bFits(baseCond).vox.r2],[bFits(c).vox.r2],black,...
                 bFits(baseCond).cond,bFits(c).cond,'R^{2}',fontSize,1,1,alpha);
             set(gca,'TickDir','out');
             pl = pl+1;

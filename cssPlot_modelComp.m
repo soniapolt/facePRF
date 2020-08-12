@@ -15,8 +15,8 @@ expt = 'fixPRF';
 saveFig = 1;
 convertDVA = 1;
 
-whichModels = {'kayCSS'};% 'kayCSS','cssExpN' 'cssExpN' 'intempCSSn' 'inflipCSSn'};
-modelStims = {'outline'};%,'internal', 'outline','internal','internal','internal'};
+whichModels = {'kayCSS' 'kayCSS'};% 'kayCSS','cssExpN' 'cssExpN' 'intempCSSn' 'inflipCSSn'};
+modelStims = {'outline' 'internal'};%,'internal', 'outline','internal','internal','internal'};
 
 fitSuffix = '';%'_orig';%
 
@@ -24,15 +24,15 @@ fitsSuffix = ''; %'_orig';
 compConds = [2 1];
 
 minR2 = ['r2-20'];
-ROI=standardROIs(7);
-whichM = 'median';
+ROI=standardROIs('face');
+whichM = 'mean';
 
 
-plotPars = {'Y'};%{'r2' 'Y' 'size' 'gain'};
+plotPars = {'r2' 'Y' 'size' 'gain'};
 parTitles = {'Estimated R^{2}' 'Y Estim.' 'Size [2xSD/sqrt(N)] (dva)' 'Gain Estim'};
 %plotType = {'fit' 'fit' 'fit' 'fit'}; % 1 = boxplot, 2 = distr, 3 = scatter, 4 = delta(distribution), 5 = histfit (delta)
-%plotType = {'scatter' 'distr' 'distr' 'box'}; % 1 = boxplot, 2 = distr, 3 = scatter, 4 = delta(distribution)
-plotType = {'delta' 'delta' 'delta' 'delta'}; % 1 = boxplot, 2 = distr, 3 = scatter, 4 = delta(distribution)
+plotType = {'scatter' 'scatter' 'scatter' 'box'}; % 1 = boxplot, 2 = distr, 3 = scatter, 4 = delta(distribution)
+%plotType = {'delta' 'delta' 'delta' 'delta'}; % 1 = boxplot, 2 = distr, 3 = scatter, 4 = delta(distribution)
 
 hems = {'rh' 'lh'};
 fitSuffix = '';
@@ -74,7 +74,7 @@ for t = 1:length(modelStims)
         for cc = 1:length(compConds)
             c = compConds(cc);
             parNum = cellNum(plotPars{p},fits(1).parNames);
-            plPars{cc} = getPar(plotPars{p},fits(c))
+            plPars{cc} = getPar(plotPars{p},fits(c),1)
 %             if ~isempty(parNum)
 %                 pars = vertcat(fits(c).vox.params);
 %                 plPars{cc} = pars(:,parNum)';

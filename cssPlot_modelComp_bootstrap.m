@@ -9,13 +9,13 @@ expt = 'fixPRF';
 % assumes all subjects and all ROIs...
 % to add later - bootstrapping within subjects
 
-minR2 = ['r2-20'];          % cutoff for vox selection
+minR2 = ['r2-50'];          % cutoff for vox selection
 
 whichModels = {'kayCSS' 'kayCSS','kayCSS','kayCSS'};
 modelStims = {'outline','photo', 'internal','eyes'};
 
 hems = {'lh' 'rh'};
-plotPars = {'gain' 'Y' 'size'};
+plotPars = {'gain' 'Y' 'size' 'r2'};
 saveFig = 1;
 plotROIs = ['V1' standardROIs('face')];
 

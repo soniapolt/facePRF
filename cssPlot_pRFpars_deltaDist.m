@@ -18,7 +18,7 @@ mS = {'mean' 'mode' 'median'};
 plotPars = {'gain' 'r2' 'Y' 'X' 'size'};%
 parTitles = {'Gain Estim' 'Estimated R^{2}' 'Y Estim.' 'X Estim.' 'Size [2xSD/sqrt(N)] (dva)'};
 
-hems = {'lh' 'rh'};
+hems = {'rh'};
 fitSuffix = '';%'_orig';%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

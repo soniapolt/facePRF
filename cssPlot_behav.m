@@ -85,4 +85,4 @@ fprintf('Overall performance: mean = %.2f (SE = %.2f), range = %.2f - %.2f\n',me
 % difference between upright and inverted faces?
 
  [~,p,~,stats] = ttest(grpPerf(:,1),grpPerf(:,2))
- fprintf('Performance difference between upright and inverted faces: %.3f Upright %.3f Inverted, t(%d) = %.3f, p = %.3f)\n',mean(grpPerf(:,2)),mean(grpPerf(:,1)),stats.df,stats.tstat,p);
+ fprintf('Performance difference between upright and inverted faces: %.3f (se = %.3f) Upright %.3f (se = %.3f) Inverted, t(%d) = %.3f, p = %.3f)\n',mean(grpPerf(:,2)),se(grpPerf(:,2)),mean(grpPerf(:,1)),se(grpPerf(:,1)),stats.df,stats.tstat,p);
